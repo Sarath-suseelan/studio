@@ -7,9 +7,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { BrainCircuit, Loader2 } from 'lucide-react';
+import { BrainCircuit, Loader2, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
+import { firebaseConfig } from '@/firebase/config';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function LoginPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -20,12 +22,13 @@ export default function LoginPage() {
   const { toast } = useToast();
   const router = useRouter();
 
+  const isConfigMissing = !firebaseConfig.apiKey || firebaseConfig.apiKey.includes('REPLACE');
+
   const handleGoogleSignIn = async () => {
-    if (!auth) return;
+    if (!auth || isConfigMissing) return;
     setIsLoading(true);
     try {
       const provider = new GoogleAuthProvider();
-      // Force account selection to avoid auto-logging into the wrong account during dev
       provider.setCustomParameters({ prompt: 'select_account' });
       await signInWithPopup(auth, provider);
       router.push('/');
@@ -33,15 +36,10 @@ export default function LoginPage() {
       console.error('Google Sign-In Error:', error);
       let description = error.message;
       
-      // Handle specific Firebase Auth errors with user-friendly messages
       if (error.code === 'auth/operation-not-allowed') {
         description = 'Google sign-in is not enabled in your Firebase project. Please enable it in the Authentication > Sign-in method tab of the Firebase Console.';
-      } else if (error.code === 'auth/popup-blocked') {
-        description = 'The login popup was blocked by your browser. Please allow popups for this site.';
-      } else if (error.code === 'auth/popup-closed-by-user') {
-        description = 'The login window was closed before completing the sign-in.';
-      } else if (error.code === 'auth/unauthorized-domain') {
-        description = 'This domain is not authorized for Firebase Authentication. Please add it to the "Authorized domains" list in the Firebase Console.';
+      } else if (error.code === 'auth/invalid-api-key') {
+        description = 'The Firebase API key is invalid. Please check your configuration in src/firebase/config.ts.';
       }
 
       toast({
@@ -56,7 +54,7 @@ export default function LoginPage() {
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!auth) return;
+    if (!auth || isConfigMissing) return;
     setIsLoading(true);
     try {
       if (isLogin) {
@@ -95,6 +93,16 @@ export default function LoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {isConfigMissing && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Configuration Required</AlertTitle>
+              <AlertDescription>
+                Firebase is not yet configured. Please update <code>src/firebase/config.ts</code> with your project's API keys from the Firebase Console.
+              </AlertDescription>
+            </Alert>
+          )}
+
           <form onSubmit={handleEmailAuth} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
@@ -105,6 +113,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                disabled={isConfigMissing}
               />
             </div>
             <div className="space-y-2">
@@ -115,9 +124,10 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                disabled={isConfigMissing}
               />
             </div>
-            <Button type="submit" className="w-full h-11 font-semibold" disabled={isLoading}>
+            <Button type="submit" className="w-full h-11 font-semibold" disabled={isLoading || isConfigMissing}>
               {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (isLogin ? 'Sign In' : 'Sign Up')}
             </Button>
           </form>
@@ -131,7 +141,12 @@ export default function LoginPage() {
             </div>
           </div>
           
-          <Button variant="outline" className="w-full h-11 border-primary/20" onClick={handleGoogleSignIn} disabled={isLoading}>
+          <Button 
+            variant="outline" 
+            className="w-full h-11 border-primary/20" 
+            onClick={handleGoogleSignIn} 
+            disabled={isLoading || isConfigMissing}
+          >
             <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
               <path
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -154,7 +169,7 @@ export default function LoginPage() {
           </Button>
         </CardContent>
         <CardFooter>
-          <Button variant="link" className="w-full text-xs" onClick={() => setIsLogin(!isLogin)}>
+          <Button variant="link" className="w-full text-xs" onClick={() => setIsLogin(!isLogin)} disabled={isConfigMissing}>
             {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
           </Button>
         </CardFooter>

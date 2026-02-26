@@ -1,12 +1,19 @@
 'use client';
 
-// This configuration object should be replaced with your actual Firebase project configuration
-// found in the Firebase Console: Project Settings > General > Your apps.
+/**
+ * Firebase Configuration
+ * 
+ * IMPORTANT: Replace these placeholder values with your actual project configuration
+ * found in the Firebase Console: Project Settings > General > Your apps.
+ * 
+ * If you are seeing an "API key not valid" error, it is because these values 
+ * have not been updated with your real project credentials yet.
+ */
 export const firebaseConfig = {
-  apiKey: "AIzaSy-REPLACE-WITH-YOUR-KEY",
-  authDomain: "project-id.firebaseapp.com",
-  projectId: "project-id",
-  storageBucket: "project-id.appspot.com",
-  messagingSenderId: "1234567890",
-  appId: "1:1234567890:web:abcdef"
+  apiKey: "REPLACE_WITH_YOUR_API_KEY",
+  authDomain: "REPLACE_WITH_YOUR_PROJECT_ID.firebaseapp.com",
+  projectId: "REPLACE_WITH_YOUR_PROJECT_ID",
+  storageBucket: "REPLACE_WITH_YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "REPLACE_WITH_YOUR_SENDER_ID",
+  appId: "REPLACE_WITH_YOUR_APP_ID"
 };
