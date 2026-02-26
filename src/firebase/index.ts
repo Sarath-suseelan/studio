@@ -1,16 +1,15 @@
 'use client';
 
-import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getFirestore, Firestore } from 'firebase/firestore';
-import { getAuth, Auth } from 'firebase/auth';
+import { initializeApp, getApps, getApp } from 'firebase/app';
+import { getFirestore } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
 import { firebaseConfig } from './config';
 
 /**
  * Initializes Firebase services.
- * Includes basic validation to catch common configuration errors.
  */
 export function initializeFirebase() {
-  const isConfigured = firebaseConfig.apiKey && !firebaseConfig.apiKey.includes('REPLACE');
+  const isConfigured = firebaseConfig.apiKey && !firebaseConfig.apiKey.includes('YOUR_API_KEY');
   
   if (!isConfigured) {
     console.warn(

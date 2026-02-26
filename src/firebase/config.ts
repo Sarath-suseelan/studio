@@ -1,5 +1,5 @@
 // Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// These values are specific to your mealiq-39f52 project.
 export const firebaseConfig = {
   apiKey: "AIzaSyAkzyldqFvwwpTzMQzWCEKy3wR8qaDVJeA",
   authDomain: "mealiq-39f52.firebaseapp.com",
