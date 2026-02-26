@@ -12,9 +12,9 @@
 export const firebaseConfig = {
   apiKey: "YOUR_API_KEY",
   authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "studio-9575638122-44bb6",
+  projectId: "studio-9575638122-44bb6", // This will be your project ID
   storageBucket: "YOUR_STORAGE_BUCKET",
   messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
   appId: "YOUR_APP_ID",
-  measurementId: "YOUR_MEASUREMENT_ID" // If you have Google Analytics configured
+  // measurementId: "YOUR_MEASUREMENT_ID" // Uncomment and add if you have Google Analytics
 };
