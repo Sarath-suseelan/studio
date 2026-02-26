@@ -67,8 +67,8 @@ const automatedMacronutrientEstimationFlow = ai.defineFlow(
       }
       return output;
     } catch (error: any) {
-      console.error('Flow Execution Error:', error);
-      throw new Error(error.message || 'An unexpected error occurred during AI analysis.');
+      // Re-throw the error so it can be handled in the server action
+      throw error;
     }
   }
 );
