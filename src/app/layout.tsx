@@ -3,6 +3,7 @@ import './globals.css';
 import { Navbar } from '@/components/Navbar';
 import { MealProvider } from '@/components/providers/meal-provider';
 import { Toaster } from '@/components/ui/toaster';
+import { Footer } from '@/components/Footer';
 
 export const metadata: Metadata = {
   title: 'MealIQ - Intelligent Macronutrient Tracking',
@@ -28,9 +29,7 @@ export default function RootLayout({
             <main className="flex-1 container mx-auto px-4 py-8">
               {children}
             </main>
-            <footer className="py-6 text-center text-xs text-muted-foreground border-t">
-              &copy; {new Date().getFullYear()} MealIQ. Refreshing health management.
-            </footer>
+            <Footer />
           </div>
           <Toaster />
         </MealProvider>
