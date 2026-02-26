@@ -10,8 +10,9 @@ export async function logMealWithAI(mealDescription: string) {
   try {
     const result = await estimateMealMacronutrients({ mealDescription });
     return result;
-  } catch (error) {
-    console.error('AI Estimation Error:', error);
-    throw new Error('Failed to estimate macronutrients. Please try again.');
+  } catch (error: any) {
+    console.error('AI Action Error:', error);
+    // Propagate a more descriptive error message to the UI
+    throw new Error(error.message || 'Failed to estimate macronutrients. Please check your meal description and try again.');
   }
 }
