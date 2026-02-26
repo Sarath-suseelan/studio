@@ -1,11 +1,18 @@
+
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
+import React, { createContext, useContext, useMemo } from 'react';
 import { MealEntry, UserGoals, DEFAULT_GOALS } from '@/lib/types';
+import { useUser, useFirestore, useCollection, useDoc } from '@/firebase';
+import { collection, doc, setDoc, addDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
+import { useMemoFirebase } from '@/firebase/firestore/use-collection';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 interface MealContextType {
   meals: MealEntry[];
   goals: UserGoals;
+  isLoading: boolean;
   addMeal: (meal: Omit<MealEntry, 'id' | 'date'>) => void;
   removeMeal: (id: string) => void;
   updateGoals: (goals: UserGoals) => void;
@@ -15,67 +22,67 @@ interface MealContextType {
 const MealContext = createContext<MealContextType | undefined>(undefined);
 
 export function MealProvider({ children }: { children: React.ReactNode }) {
-  const [meals, setMeals] = useState<MealEntry[]>([]);
-  const [goals, setGoals] = useState<UserGoals>(DEFAULT_GOALS);
-  const [isInitialized, setIsInitialized] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
+  const { user, loading: authLoading } = useUser();
+  const db = useFirestore();
 
-  useEffect(() => {
-    setIsMounted(true);
-    try {
-      const savedMeals = localStorage.getItem('mealiq_meals');
-      const savedGoals = localStorage.getItem('mealiq_goals');
-      if (savedMeals) {
-        const parsed = JSON.parse(savedMeals);
-        if (Array.isArray(parsed)) setMeals(parsed);
-      }
-      if (savedGoals) {
-        const parsed = JSON.parse(savedGoals);
-        if (parsed && typeof parsed === 'object') setGoals({ ...DEFAULT_GOALS, ...parsed });
-      }
-    } catch (e) {
-      console.error('Failed to restore from storage:', e);
-    }
-    setIsInitialized(true);
-  }, []);
+  const mealsQuery = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return query(collection(db, 'users', user.uid, 'meals'), orderBy('date', 'desc'));
+  }, [db, user]);
 
-  useEffect(() => {
-    if (isInitialized) {
-      localStorage.setItem('mealiq_meals', JSON.stringify(meals));
-    }
-  }, [meals, isInitialized]);
+  const goalsDoc = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return doc(db, 'users', user.uid, 'settings', 'goals');
+  }, [db, user]);
 
-  useEffect(() => {
-    if (isInitialized) {
-      localStorage.setItem('mealiq_goals', JSON.stringify(goals));
-    }
-  }, [goals, isInitialized]);
+  const { data: mealsData, loading: mealsLoading } = useCollection<MealEntry>(mealsQuery);
+  const { data: goalsData, loading: goalsLoading } = useDoc<UserGoals>(goalsDoc);
+
+  const meals = mealsData || [];
+  const goals = goalsData || DEFAULT_GOALS;
+  const isLoading = authLoading || mealsLoading || goalsLoading;
 
   const addMeal = (meal: Omit<MealEntry, 'id' | 'date'>) => {
-    const id = typeof crypto !== 'undefined' && crypto.randomUUID 
-      ? crypto.randomUUID() 
-      : Math.random().toString(36).substring(2) + Date.now().toString(36);
-
-    const newEntry: MealEntry = {
+    if (!db || !user) return;
+    const mealRef = collection(db, 'users', user.uid, 'meals');
+    const newMeal = {
       ...meal,
-      id,
       date: new Date().toISOString(),
     };
-    setMeals((prev) => [newEntry, ...prev]);
+    
+    addDoc(mealRef, newMeal).catch(async (e) => {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({
+        path: mealRef.path,
+        operation: 'create',
+        requestResourceData: newMeal,
+      }));
+    });
   };
 
   const removeMeal = (id: string) => {
-    setMeals((prev) => prev.filter((m) => m.id !== id));
+    if (!db || !user) return;
+    const mealDoc = doc(db, 'users', user.uid, 'meals', id);
+    deleteDoc(mealDoc).catch(async (e) => {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({
+        path: mealDoc.path,
+        operation: 'delete',
+      }));
+    });
   };
 
   const updateGoals = (newGoals: UserGoals) => {
-    setGoals(newGoals);
+    if (!db || !user) return;
+    const goalsRef = doc(db, 'users', user.uid, 'settings', 'goals');
+    setDoc(goalsRef, newGoals, { merge: true }).catch(async (e) => {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({
+        path: goalsRef.path,
+        operation: 'update',
+        requestResourceData: newGoals,
+      }));
+    });
   };
 
   const dailyTotals = useMemo(() => {
-    // Return zeros during SSR and until mounted to prevent hydration mismatch
-    if (!isMounted) return { calories: 0, carbohydrates: 0, protein: 0, fat: 0 };
-    
     const today = new Date().toDateString();
     return meals
       .filter((m) => {
@@ -94,10 +101,10 @@ export function MealProvider({ children }: { children: React.ReactNode }) {
         }),
         { calories: 0, carbohydrates: 0, protein: 0, fat: 0 }
       );
-  }, [meals, isMounted]);
+  }, [meals]);
 
   return (
-    <MealContext.Provider value={{ meals, goals, addMeal, removeMeal, updateGoals, dailyTotals }}>
+    <MealContext.Provider value={{ meals, goals, isLoading, addMeal, removeMeal, updateGoals, dailyTotals }}>
       {children}
     </MealContext.Provider>
   );

@@ -1,0 +1,59 @@
+
+{
+  "entities": {
+    "Meal": {
+      "title": "Meal",
+      "description": "A logged meal with nutrition data",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "calories": { "type": "number" },
+        "macros": {
+          "type": "object",
+          "properties": {
+            "carbohydrates": { "type": "number" },
+            "protein": { "type": "number" },
+            "fat": { "type": "number" }
+          }
+        },
+        "ingredients": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "quantity": { "type": "string" }
+            }
+          }
+        },
+        "date": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "calories", "macros", "date"]
+    },
+    "UserGoals": {
+      "title": "User Goals",
+      "description": "Daily nutritional targets for a user",
+      "type": "object",
+      "properties": {
+        "calories": { "type": "number" },
+        "carbohydrates": { "type": "number" },
+        "protein": { "type": "number" },
+        "fat": { "type": "number" }
+      }
+    }
+  },
+  "auth": {
+    "providers": ["google.com", "password"]
+  },
+  "firestore": {
+    "/users/{userId}/meals/{mealId}": {
+      "schema": "Meal",
+      "description": "Collection of meals logged by the user"
+    },
+    "/users/{userId}/settings/goals": {
+      "schema": "UserGoals",
+      "description": "Daily goals for the user"
+    }
+  }
+}
