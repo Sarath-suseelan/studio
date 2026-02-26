@@ -3,16 +3,31 @@
 import { useMeals } from '@/components/providers/meal-provider';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+
+const chartConfig = {
+  carbohydrates: {
+    label: "Carbohydrates",
+    color: "hsl(var(--chart-1))",
+  },
+  protein: {
+    label: "Protein",
+    color: "hsl(var(--chart-2))",
+  },
+  fat: {
+    label: "Fat",
+    color: "hsl(var(--chart-3))",
+  },
+} satisfies ChartConfig;
 
 export function MacroSummary() {
   const { dailyTotals, goals } = useMeals();
 
   const data = [
-    { name: 'Carbohydrates', value: dailyTotals.carbohydrates, color: 'hsl(var(--chart-1))' },
-    { name: 'Protein', value: dailyTotals.protein, color: 'hsl(var(--chart-2))' },
-    { name: 'Fat', value: dailyTotals.fat, color: 'hsl(var(--chart-3))' },
+    { name: 'carbohydrates', value: dailyTotals.carbohydrates, fill: 'var(--color-carbohydrates)' },
+    { name: 'protein', value: dailyTotals.protein, fill: 'var(--color-protein)' },
+    { name: 'fat', value: dailyTotals.fat, fill: 'var(--color-fat)' },
   ];
 
   const calPercentage = Math.min((dailyTotals.calories / goals.calories) * 100, 100);
@@ -25,8 +40,8 @@ export function MacroSummary() {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-6 md:flex-row md:items-center">
-            <div className="h-40 w-40 shrink-0 mx-auto">
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="h-40 w-40 shrink-0 mx-auto relative">
+              <ChartContainer config={chartConfig} className="h-full w-full">
                 <PieChart>
                   <Pie
                     data={data}
@@ -34,17 +49,18 @@ export function MacroSummary() {
                     outerRadius={65}
                     paddingAngle={5}
                     dataKey="value"
+                    nameKey="name"
                   >
                     {data.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
                     ))}
                   </Pie>
                   <ChartTooltip content={<ChartTooltipContent hideLabel />} />
                 </PieChart>
-              </ResponsiveContainer>
-              <div className="text-center -mt-24">
+              </ChartContainer>
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                 <div className="text-2xl font-bold font-headline">{dailyTotals.calories}</div>
-                <div className="text-xs text-muted-foreground uppercase tracking-wider">kcal</div>
+                <div className="text-[10px] text-muted-foreground uppercase tracking-wider">kcal</div>
               </div>
             </div>
             
@@ -57,9 +73,9 @@ export function MacroSummary() {
                 <Progress value={calPercentage} className="h-2 bg-secondary" />
               </div>
               <div className="grid grid-cols-3 gap-2">
-                <StatBox label="Carbs" value={dailyTotals.carbohydrates} goal={goals.carbohydrates} unit="g" />
-                <StatBox label="Protein" value={dailyTotals.protein} goal={goals.protein} unit="g" />
-                <StatBox label="Fat" value={dailyTotals.fat} goal={goals.fat} unit="g" />
+                <StatBox label="Carbs" value={dailyTotals.carbohydrates} goal={goals.carbohydrates} unit="g" color="var(--color-carbohydrates)" />
+                <StatBox label="Protein" value={dailyTotals.protein} goal={goals.protein} unit="g" color="var(--color-protein)" />
+                <StatBox label="Fat" value={dailyTotals.fat} goal={goals.fat} unit="g" color="var(--color-fat)" />
               </div>
             </div>
           </div>
@@ -85,15 +101,15 @@ export function MacroSummary() {
         <CardContent className="space-y-1 text-xs">
           <div className="flex justify-between items-center py-1 border-b border-dashed">
             <span>Carbohydrates</span>
-            <span className="font-semibold">{Math.round((dailyTotals.carbohydrates * 4 / dailyTotals.calories) * 100) || 0}%</span>
+            <span className="font-semibold">{Math.round((dailyTotals.carbohydrates * 4 / Math.max(1, dailyTotals.calories)) * 100) || 0}%</span>
           </div>
           <div className="flex justify-between items-center py-1 border-b border-dashed">
             <span>Protein</span>
-            <span className="font-semibold">{Math.round((dailyTotals.protein * 4 / dailyTotals.calories) * 100) || 0}%</span>
+            <span className="font-semibold">{Math.round((dailyTotals.protein * 4 / Math.max(1, dailyTotals.calories)) * 100) || 0}%</span>
           </div>
           <div className="flex justify-between items-center py-1">
             <span>Fat</span>
-            <span className="font-semibold">{Math.round((dailyTotals.fat * 9 / dailyTotals.calories) * 100) || 0}%</span>
+            <span className="font-semibold">{Math.round((dailyTotals.fat * 9 / Math.max(1, dailyTotals.calories)) * 100) || 0}%</span>
           </div>
         </CardContent>
       </Card>
@@ -101,14 +117,14 @@ export function MacroSummary() {
   );
 }
 
-function StatBox({ label, value, goal, unit }: { label: string; value: number; goal: number; unit: string }) {
+function StatBox({ label, value, goal, unit, color }: { label: string; value: number; goal: number; unit: string; color: string }) {
   const percentage = Math.min((value / goal) * 100, 100);
   return (
     <div className="space-y-1">
       <div className="text-[10px] text-muted-foreground uppercase">{label}</div>
       <div className="text-sm font-bold">{value}{unit}</div>
       <div className="h-1 w-full bg-secondary rounded-full overflow-hidden">
-        <div className="h-full bg-primary" style={{ width: `${percentage}%` }} />
+        <div className="h-full" style={{ width: `${percentage}%`, backgroundColor: color }} />
       </div>
     </div>
   );
