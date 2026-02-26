@@ -32,7 +32,6 @@ export default function LoginPage() {
       const provider = new GoogleAuthProvider();
       provider.setCustomParameters({ prompt: 'select_account' });
       
-      // Attempting to keep this as direct as possible to avoid popup blockers
       await signInWithPopup(auth, provider);
       router.push('/');
     } catch (error: any) {
