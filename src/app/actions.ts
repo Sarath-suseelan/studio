@@ -13,9 +13,13 @@ export async function logMealWithAI(mealDescription: string) {
   } catch (error: any) {
     console.error('AI Action Error:', error);
     
-    // Check for specific API enablement error
-    if (error.message?.includes('403') || error.message?.includes('Generative Language API has not been used')) {
-      throw new Error('AI services are not yet enabled for this project. Please visit the Google Cloud Console link in the error log to enable the Generative Language API.');
+    // Check for specific API enablement error (403 Forbidden)
+    const isApiNotEnabled = error.message?.includes('403') || 
+                           error.message?.includes('Generative Language API') ||
+                           error.message?.includes('not been used');
+
+    if (isApiNotEnabled) {
+      throw new Error('AI services are disabled. Please go to https://console.cloud.google.com/apis/library/generativelanguage.googleapis.com and click ENABLE to fix this.');
     }
     
     // Propagate a more descriptive error message to the UI
