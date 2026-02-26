@@ -22,29 +22,36 @@ export default function LoginPage() {
   const { toast } = useToast();
   const router = useRouter();
 
-  const isConfigMissing = !firebaseConfig.apiKey || firebaseConfig.apiKey.includes('REPLACE');
+  const isConfigMissing = !firebaseConfig.apiKey || firebaseConfig.apiKey.includes('YOUR_API_KEY');
 
   const handleGoogleSignIn = async () => {
     if (!auth || isConfigMissing) return;
+    
     setIsLoading(true);
     try {
       const provider = new GoogleAuthProvider();
       provider.setCustomParameters({ prompt: 'select_account' });
+      
+      // Attempting to keep this as direct as possible to avoid popup blockers
       await signInWithPopup(auth, provider);
       router.push('/');
     } catch (error: any) {
       console.error('Google Sign-In Error:', error);
+      let title = 'Authentication Error';
       let description = error.message;
       
-      if (error.code === 'auth/operation-not-allowed') {
-        description = 'Google sign-in is not enabled in your Firebase project. Please enable it in the Authentication > Sign-in method tab of the Firebase Console.';
+      if (error.code === 'auth/popup-blocked') {
+        title = 'Popup Blocked';
+        description = 'Your browser blocked the sign-in window. Please click the button again and allow popups for this site.';
+      } else if (error.code === 'auth/operation-not-allowed') {
+        description = 'Google sign-in is not enabled in your Firebase project. Enable it in the Authentication > Sign-in method tab of the Firebase Console.';
       } else if (error.code === 'auth/invalid-api-key') {
         description = 'The Firebase API key is invalid. Please check your configuration in src/firebase/config.ts.';
       }
 
       toast({
         variant: 'destructive',
-        title: 'Authentication Error',
+        title,
         description,
       });
     } finally {
@@ -98,7 +105,7 @@ export default function LoginPage() {
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>Configuration Required</AlertTitle>
               <AlertDescription>
-                Firebase is not yet configured. Please update <code>src/firebase/config.ts</code> with your project's API keys from the Firebase Console.
+                Firebase is not configured. Go to the Firebase Console, get your Web App config, and update <code>src/firebase/config.ts</code>.
               </AlertDescription>
             </Alert>
           )}
