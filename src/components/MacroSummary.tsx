@@ -31,12 +31,12 @@ export function MacroSummary() {
   }, []);
 
   const data = [
-    { name: 'carbohydrates', value: dailyTotals.carbohydrates, fill: 'var(--color-carbohydrates)' },
-    { name: 'protein', value: dailyTotals.protein, fill: 'var(--color-protein)' },
-    { name: 'fat', value: dailyTotals.fat, fill: 'var(--color-fat)' },
+    { name: 'carbohydrates', value: dailyTotals.carbohydrates || 1, fill: 'var(--color-carbohydrates)' },
+    { name: 'protein', value: dailyTotals.protein || 1, fill: 'var(--color-protein)' },
+    { name: 'fat', value: dailyTotals.fat || 1, fill: 'var(--color-fat)' },
   ];
 
-  const calPercentage = Math.min((dailyTotals.calories / goals.calories) * 100, 100);
+  const calPercentage = Math.min((dailyTotals.calories / (goals.calories || 1)) * 100, 100);
 
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -58,8 +58,7 @@ export function MacroSummary() {
                         paddingAngle={5}
                         dataKey="value"
                         nameKey="name"
-                        animationBegin={0}
-                        animationDuration={1000}
+                        isAnimationActive={true}
                       >
                         {data.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.fill} />
@@ -134,7 +133,7 @@ export function MacroSummary() {
 }
 
 function StatBox({ label, value, goal, unit, color }: { label: string; value: number; goal: number; unit: string; color: string }) {
-  const percentage = Math.min((value / goal) * 100, 100);
+  const percentage = Math.min((value / (goal || 1)) * 100, 100);
   return (
     <div className="space-y-1">
       <div className="text-[10px] text-muted-foreground uppercase">{label}</div>

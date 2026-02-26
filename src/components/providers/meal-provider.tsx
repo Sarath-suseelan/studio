@@ -34,7 +34,7 @@ export function MealProvider({ children }: { children: React.ReactNode }) {
         if (parsed && typeof parsed === 'object') setGoals({ ...DEFAULT_GOALS, ...parsed });
       }
     } catch (e) {
-      console.error('Failed to restore meals/goals from storage:', e);
+      console.error('Failed to restore from storage:', e);
     }
     setIsInitialized(true);
   }, []);
@@ -73,6 +73,7 @@ export function MealProvider({ children }: { children: React.ReactNode }) {
   };
 
   const dailyTotals = useMemo(() => {
+    // Return zeros during SSR and until mounted to prevent hydration mismatch
     if (!isMounted) return { calories: 0, carbohydrates: 0, protein: 0, fat: 0 };
     
     const today = new Date().toDateString();
