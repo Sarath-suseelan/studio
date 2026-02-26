@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -26,13 +25,29 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       const provider = new GoogleAuthProvider();
+      // Force account selection to avoid auto-logging into the wrong account during dev
+      provider.setCustomParameters({ prompt: 'select_account' });
       await signInWithPopup(auth, provider);
       router.push('/');
     } catch (error: any) {
+      console.error('Google Sign-In Error:', error);
+      let description = error.message;
+      
+      // Handle specific Firebase Auth errors with user-friendly messages
+      if (error.code === 'auth/operation-not-allowed') {
+        description = 'Google sign-in is not enabled in your Firebase project. Please enable it in the Authentication > Sign-in method tab of the Firebase Console.';
+      } else if (error.code === 'auth/popup-blocked') {
+        description = 'The login popup was blocked by your browser. Please allow popups for this site.';
+      } else if (error.code === 'auth/popup-closed-by-user') {
+        description = 'The login window was closed before completing the sign-in.';
+      } else if (error.code === 'auth/unauthorized-domain') {
+        description = 'This domain is not authorized for Firebase Authentication. Please add it to the "Authorized domains" list in the Firebase Console.';
+      }
+
       toast({
         variant: 'destructive',
         title: 'Authentication Error',
-        description: error.message,
+        description,
       });
     } finally {
       setIsLoading(false);
