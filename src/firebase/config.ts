@@ -5,16 +5,13 @@
  * 
  * IMPORTANT: Replace these placeholder values with your actual project configuration
  * found in the Firebase Console: Project Settings > General > Your apps.
- * 
- * If you are seeing an "API key not valid" error, it is because these values 
- * have not been updated with your real project credentials yet.
  */
 export const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "studio-9575638122-44bb6", // This will be your project ID
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID",
-  // measurementId: "YOUR_MEASUREMENT_ID" // Uncomment and add if you have Google Analytics
+  apiKey: "AIzaSyAkzyldqFvwwpTzMQzWCEKy3wR8qaDVJeA",
+  authDomain: "mealiq-39f52.firebaseapp.com",
+  projectId: "studio-9575638122-44bb6",
+  storageBucket: "mealiq-39f52.firebasestorage.app",
+  messagingSenderId: "413224856420",
+  appId: "1:413224856420:web:a5908985ad01353b646871",
+  measurementId: "G-WJYN5X3SM1"
 };
