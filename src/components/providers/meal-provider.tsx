@@ -22,10 +22,20 @@ export function MealProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     setIsMounted(true);
-    const savedMeals = localStorage.getItem('mealiq_meals');
-    const savedGoals = localStorage.getItem('mealiq_goals');
-    if (savedMeals) setMeals(JSON.parse(savedMeals));
-    if (savedGoals) setGoals(JSON.parse(savedGoals));
+    try {
+      const savedMeals = localStorage.getItem('mealiq_meals');
+      const savedGoals = localStorage.getItem('mealiq_goals');
+      if (savedMeals) {
+        const parsed = JSON.parse(savedMeals);
+        if (Array.isArray(parsed)) setMeals(parsed);
+      }
+      if (savedGoals) {
+        const parsed = JSON.parse(savedGoals);
+        if (parsed && typeof parsed === 'object') setGoals({ ...DEFAULT_GOALS, ...parsed });
+      }
+    } catch (e) {
+      console.error('Failed to restore meals/goals from storage:', e);
+    }
     setIsInitialized(true);
   }, []);
 
@@ -42,9 +52,13 @@ export function MealProvider({ children }: { children: React.ReactNode }) {
   }, [goals, isInitialized]);
 
   const addMeal = (meal: Omit<MealEntry, 'id' | 'date'>) => {
+    const id = typeof crypto !== 'undefined' && crypto.randomUUID 
+      ? crypto.randomUUID() 
+      : Math.random().toString(36).substring(2) + Date.now().toString(36);
+
     const newEntry: MealEntry = {
       ...meal,
-      id: crypto.randomUUID(),
+      id,
       date: new Date().toISOString(),
     };
     setMeals((prev) => [newEntry, ...prev]);
@@ -59,12 +73,17 @@ export function MealProvider({ children }: { children: React.ReactNode }) {
   };
 
   const dailyTotals = useMemo(() => {
-    // Only calculate totals after mounting to prevent server/client date mismatches
     if (!isMounted) return { calories: 0, carbohydrates: 0, protein: 0, fat: 0 };
     
     const today = new Date().toDateString();
     return meals
-      .filter((m) => new Date(m.date).toDateString() === today)
+      .filter((m) => {
+        try {
+          return new Date(m.date).toDateString() === today;
+        } catch (e) {
+          return false;
+        }
+      })
       .reduce(
         (acc, m) => ({
           calories: acc.calories + m.calories,

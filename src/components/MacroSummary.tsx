@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useMeals } from '@/components/providers/meal-provider';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -23,6 +24,11 @@ const chartConfig = {
 
 export function MacroSummary() {
   const { dailyTotals, goals } = useMeals();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const data = [
     { name: 'carbohydrates', value: dailyTotals.carbohydrates, fill: 'var(--color-carbohydrates)' },
@@ -41,23 +47,33 @@ export function MacroSummary() {
         <CardContent>
           <div className="flex flex-col gap-6 md:flex-row md:items-center">
             <div className="h-40 w-40 shrink-0 mx-auto relative">
-              <ChartContainer config={chartConfig} className="h-full w-full">
-                <PieChart>
-                  <Pie
-                    data={data}
-                    innerRadius={45}
-                    outerRadius={65}
-                    paddingAngle={5}
-                    dataKey="value"
-                    nameKey="name"
-                  >
-                    {data.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.fill} />
-                    ))}
-                  </Pie>
-                  <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-                </PieChart>
-              </ChartContainer>
+              {mounted ? (
+                <ChartContainer config={chartConfig} className="h-full w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={data}
+                        innerRadius={45}
+                        outerRadius={65}
+                        paddingAngle={5}
+                        dataKey="value"
+                        nameKey="name"
+                        animationBegin={0}
+                        animationDuration={1000}
+                      >
+                        {data.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.fill} />
+                        ))}
+                      </Pie>
+                      <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </ChartContainer>
+              ) : (
+                <div className="h-full w-full rounded-full border-8 border-secondary flex items-center justify-center">
+                  <span className="text-[10px] text-muted-foreground uppercase font-bold">Loading...</span>
+                </div>
+              )}
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                 <div className="text-2xl font-bold font-headline">{dailyTotals.calories}</div>
                 <div className="text-[10px] text-muted-foreground uppercase tracking-wider">kcal</div>
