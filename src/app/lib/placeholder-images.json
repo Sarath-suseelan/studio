@@ -1,0 +1,16 @@
+{
+  "placeholderImages": [
+    {
+      "id": "healthy-meal-1",
+      "description": "A vibrant green salad with avocado and seeds",
+      "imageUrl": "https://picsum.photos/seed/health1/800/600",
+      "imageHint": "healthy salad"
+    },
+    {
+      "id": "healthy-meal-2",
+      "description": "Grilled salmon and vegetables",
+      "imageUrl": "https://picsum.photos/seed/health2/800/600",
+      "imageHint": "grilled salmon"
+    }
+  ]
+}
