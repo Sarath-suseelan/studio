@@ -60,15 +60,10 @@ const automatedMacronutrientEstimationFlow = ai.defineFlow(
     outputSchema: EstimateMealMacronutrientsOutputSchema,
   },
   async (input) => {
-    try {
-      const { output } = await prompt(input);
-      if (!output) {
-        throw new Error('The AI was unable to generate a nutritional estimate for this description. Please try being more specific.');
-      }
-      return output;
-    } catch (error: any) {
-      // Re-throw the error so it can be handled in the server action
-      throw error;
+    const { output } = await prompt(input);
+    if (!output) {
+      throw new Error('The AI was unable to generate a nutritional estimate for this description. Please try being more specific.');
     }
+    return output;
   }
 );

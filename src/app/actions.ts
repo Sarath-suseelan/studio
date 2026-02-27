@@ -14,12 +14,14 @@ export async function logMealWithAI(mealDescription: string) {
     console.error('AI Action Error:', error);
     
     // Check for specific API enablement error (403 Forbidden)
-    const isApiNotEnabled = error.message?.includes('403') || 
-                           error.message?.includes('Generative Language API') ||
-                           error.message?.includes('not been used');
+    const errorMsg = error.message || '';
+    const isApiNotEnabled = errorMsg.includes('403') || 
+                           errorMsg.includes('Generative Language API') ||
+                           errorMsg.includes('not been used') ||
+                           errorMsg.includes('PERMISSION_DENIED');
 
     if (isApiNotEnabled) {
-      throw new Error('AI services are disabled. Please go to https://console.cloud.google.com/apis/library/generativelanguage.googleapis.com and click ENABLE to fix this.');
+      throw new Error('AI services are disabled. Please go to https://console.cloud.google.com/apis/library/generativelanguage.googleapis.com and click ENABLE to fix this. It may take a minute to activate.');
     }
     
     // Propagate a more descriptive error message to the UI
