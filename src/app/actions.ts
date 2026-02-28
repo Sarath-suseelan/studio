@@ -18,23 +18,18 @@ export async function logMealWithAI(mealDescription: string) {
     console.error('AI Flow Error:', errorMsg);
     
     // Check for specific API errors
-    const isPermissionError = errorMsg.includes('403') || 
-                             errorMsg.includes('PERMISSION_DENIED');
-    const isKeyError = errorMsg.includes('API_KEY_INVALID') || 
-                       errorMsg.includes('401');
-
-    if (isPermissionError) {
+    if (errorMsg.includes('404') || errorMsg.includes('not found')) {
       throw new Error(
-        "AI services are currently unavailable for this project. Please ensure the 'Generative Language API' is enabled in your Google Cloud Console."
+        "The AI model could not be found. This might be a temporary service issue or an invalid model identifier. Please try again in a few moments."
       );
     }
 
-    if (isKeyError) {
+    if (errorMsg.includes('403') || errorMsg.includes('PERMISSION_DENIED')) {
       throw new Error(
-        "Invalid API Key. Please check the credentials in your configuration."
+        "AI services are currently unavailable. Please ensure the 'Generative Language API' is enabled and your API key is valid."
       );
     }
     
-    throw new Error(errorMsg || 'Failed to analyze meal. Please try again.');
+    throw new Error('Failed to analyze meal. Please try again.');
   }
 }
