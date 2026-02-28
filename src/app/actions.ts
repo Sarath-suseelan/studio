@@ -17,14 +17,14 @@ export async function logMealWithAI(mealDescription: string) {
     // Check for 404 specifically
     if (errorMsg.includes('404') || errorMsg.includes('not found')) {
       throw new Error(
-        `AI Model Error: ${errorMsg}. Please ensure 'Generative Language API' is enabled for project studio-9575638122-44bb6.`
+        `AI Model Error (404). Please ensure 'Generative Language API' is enabled for project 'studio-9575638122-44bb6' at: https://console.cloud.google.com/apis/library/generativelanguage.googleapis.com?project=studio-9575638122-44bb6`
       );
     }
 
     // Check for 403
     if (errorMsg.includes('403') || errorMsg.includes('PERMISSION_DENIED')) {
       throw new Error(
-        "AI access denied (403). Your API key might have restrictions or the API is not enabled."
+        "AI access denied (403). Your API key might have restrictions. Check credentials at: https://console.cloud.google.com/apis/credentials?project=studio-9575638122-44bb6"
       );
     }
     
