@@ -1,7 +1,7 @@
 // Your web app's Firebase configuration
 // These values are specific to your mealiq-39f52 project.
 export const firebaseConfig = {
-  apiKey: "AIzaSyAKnhLxtPYHAqUdympLmtdvd-xbXLvohBs",
+  apiKey: "AIzaSyDixOsgPgMjHbAky8mzbT2uH4sl7xjo5is",
   authDomain: "studio-9575638122-44bb6.firebaseapp.com",
   projectId: "studio-9575638122-44bb6",
   storageBucket: "studio-9575638122-44bb6.firebasestorage.app",
