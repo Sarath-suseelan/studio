@@ -15,21 +15,21 @@ export async function logMealWithAI(mealDescription: string) {
     return result;
   } catch (error: any) {
     const errorMsg = error.message || String(error);
-    console.error('AI Flow Error:', errorMsg);
+    console.error('AI Flow Error Details:', error);
     
     // Check for specific API errors
     if (errorMsg.includes('404') || errorMsg.includes('not found')) {
       throw new Error(
-        "The AI model could not be found. This might be a temporary service issue or an invalid model identifier. Please try again in a few moments."
+        "The AI model could not be found. This is usually an authentication or model availability issue. Please ensure your API key is correctly configured and has access to Gemini 1.5 Flash."
       );
     }
 
     if (errorMsg.includes('403') || errorMsg.includes('PERMISSION_DENIED')) {
       throw new Error(
-        "AI services are currently unavailable. Please ensure the 'Generative Language API' is enabled and your API key is valid."
+        "AI services are currently unavailable (403). Please ensure the 'Generative Language API' is enabled and your API key has no IP or referrer restrictions."
       );
     }
     
-    throw new Error('Failed to analyze meal. Please try again.');
+    throw new Error(`Failed to analyze meal: ${errorMsg.slice(0, 100)}`);
   }
 }
