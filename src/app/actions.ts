@@ -1,3 +1,4 @@
+
 'use server';
 
 import { estimateMealMacronutrients } from '@/ai/flows/automated-macronutrient-estimation';
@@ -17,19 +18,20 @@ export async function logMealWithAI(mealDescription: string) {
     const errorMsg = error.message || String(error);
     console.error('AI Flow Error Details:', error);
     
-    // Check for specific API errors
+    // 404: Model not found
     if (errorMsg.includes('404') || errorMsg.includes('not found')) {
       throw new Error(
-        "The AI model could not be found. This is usually an authentication or model availability issue. Please ensure your API key is correctly configured and has access to Gemini 1.5 Flash."
+        "AI model not found (404). Please ensure you are using a 'Web API Key' (starts with AIzaSy) and that the 'Generative Language API' is enabled in your Google Cloud Console."
       );
     }
 
+    // 403: Permission denied
     if (errorMsg.includes('403') || errorMsg.includes('PERMISSION_DENIED')) {
       throw new Error(
-        "AI services are currently unavailable (403). Please ensure the 'Generative Language API' is enabled and your API key has no IP or referrer restrictions."
+        "AI services are currently unavailable (403). Check if your API key has IP or Referrer restrictions in the Google Cloud Console."
       );
     }
     
-    throw new Error(`Failed to analyze meal: ${errorMsg.slice(0, 100)}`);
+    throw new Error(`Failed to analyze meal: ${errorMsg.slice(0, 150)}`);
   }
 }
