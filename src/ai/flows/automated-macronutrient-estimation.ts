@@ -38,7 +38,7 @@ export async function estimateMealMacronutrients(input: EstimateMealMacronutrien
 
 const prompt = ai.definePrompt({
   name: 'automatedMacronutrientEstimationPrompt',
-  // Using gemini-1.5-flash-latest which is often more reliable for new API keys
+  // Using the 'latest' alias which resolves 404s for new keys
   model: 'googleai/gemini-1.5-flash-latest',
   input: { schema: EstimateMealMacronutrientsInputSchema },
   output: { schema: EstimateMealMacronutrientsOutputSchema },
