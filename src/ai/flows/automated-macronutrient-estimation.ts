@@ -40,12 +40,12 @@ const prompt = ai.definePrompt({
   name: 'automatedMacronutrientEstimationPrompt',
   input: { schema: EstimateMealMacronutrientsInputSchema },
   output: { schema: EstimateMealMacronutrientsOutputSchema },
-  system: 'You are a precise nutritional analysis engine. Break down meals into calories, macros (carbs, protein, fat), and ingredients based on common nutritional databases.',
+  system: 'You are a precise nutritional analysis engine. Break down meals into calories, macros (carbs, protein, fat), and ingredients based on common nutritional databases. Provide realistic estimates based on standard portions.',
   prompt: `Analyze this meal and provide a nutritional estimate:
   
   Meal Description: {{{mealDescription}}}
   
-  If the description is too vague, use standard average portions for the mentioned foods.`,
+  If the description is too vague, use standard average portions for the mentioned foods. Always provide a mealName, totalCalories, and macronutrients.`,
 });
 
 const automatedMacronutrientEstimationFlow = ai.defineFlow(
@@ -55,10 +55,15 @@ const automatedMacronutrientEstimationFlow = ai.defineFlow(
     outputSchema: EstimateMealMacronutrientsOutputSchema,
   },
   async (input) => {
-    const { output } = await prompt(input);
-    if (!output) {
-      throw new Error('Could not analyze nutritional data. Please try being more specific about portions.');
+    try {
+      const { output } = await prompt(input);
+      if (!output) {
+        throw new Error('Could not analyze nutritional data. Please try being more specific about portions.');
+      }
+      return output;
+    } catch (e: any) {
+      console.error('Flow execution error:', e);
+      throw e;
     }
-    return output;
   }
 );

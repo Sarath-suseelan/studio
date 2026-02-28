@@ -9,21 +9,24 @@ export async function logMealWithAI(mealDescription: string) {
   
   try {
     const result = await estimateMealMacronutrients({ mealDescription });
+    if (!result || !result.mealName) {
+      throw new Error('AI returned an invalid response. Please try describing the meal differently.');
+    }
     return result;
   } catch (error: any) {
-    console.error('AI Action Error:', error);
+    const errorMsg = error.message || String(error);
+    console.error('Detailed AI Error:', errorMsg);
     
-    const errorMsg = error.message || '';
-    // Specifically looking for 403 Forbidden which indicates API not enabled
-    const isApiNotEnabled = errorMsg.includes('403') || 
-                           errorMsg.includes('Generative Language API') ||
-                           errorMsg.includes('PERMISSION_DENIED');
+    // Check if it's specifically a permission/enablement error
+    const isPermissionError = errorMsg.includes('403') || 
+                             errorMsg.includes('Generative Language API') ||
+                             errorMsg.includes('PERMISSION_DENIED');
 
-    if (isApiNotEnabled) {
-      // The project ID/number is derived from your Firebase config (268822938094)
-      throw new Error('AI services are disabled. Please go to https://console.cloud.google.com/apis/library/generativelanguage.googleapis.com?project=268822938094 and click ENABLE to fix this. It takes about a minute to activate.');
+    if (isPermissionError) {
+      // If it's still failing after enablement, it might be propagation delay
+      throw new Error('AI service is still initializing. Since you just enabled it, please wait 1-2 minutes and try again. If it persists, ensure your API key has no restrictions.');
     }
     
-    throw new Error(error.message || 'Failed to analyze meal. Please try a different description.');
+    throw new Error(errorMsg || 'Failed to analyze meal. Please try a different description.');
   }
 }
