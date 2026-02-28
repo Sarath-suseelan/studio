@@ -17,14 +17,21 @@ export async function logMealWithAI(mealDescription: string) {
     const errorMsg = error.message || String(error);
     console.error('AI Flow Error:', errorMsg);
     
-    // Check for common permission/configuration errors
+    // Check for specific API errors
     const isPermissionError = errorMsg.includes('403') || 
-                             errorMsg.includes('PERMISSION_DENIED') ||
-                             errorMsg.includes('API_KEY_INVALID');
+                             errorMsg.includes('PERMISSION_DENIED');
+    const isKeyError = errorMsg.includes('API_KEY_INVALID') || 
+                       errorMsg.includes('401');
 
     if (isPermissionError) {
       throw new Error(
-        "AI Authentication Error. Please verify that your API Key is correctly configured and that the 'Generative Language API' is enabled in your Google Cloud Console."
+        "AI services are currently unavailable for this project. Please ensure the 'Generative Language API' is enabled in your Google Cloud Console."
+      );
+    }
+
+    if (isKeyError) {
+      throw new Error(
+        "Invalid API Key. Please check the credentials in your configuration."
       );
     }
     
