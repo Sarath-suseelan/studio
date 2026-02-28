@@ -38,7 +38,8 @@ export async function estimateMealMacronutrients(input: EstimateMealMacronutrien
 
 const prompt = ai.definePrompt({
   name: 'automatedMacronutrientEstimationPrompt',
-  model: 'gemini-1.5-flash',
+  // In Genkit 1.x, the model must be prefixed with the provider name
+  model: 'googleai/gemini-1.5-flash',
   input: { schema: EstimateMealMacronutrientsInputSchema },
   output: { schema: EstimateMealMacronutrientsOutputSchema },
   system: 'You are a precise nutritional analysis engine. Break down meals into calories, macros (carbs, protein, fat), and ingredients based on common nutritional databases. Provide realistic estimates based on standard portions.',
