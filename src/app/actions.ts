@@ -15,11 +15,14 @@ export async function logMealWithAI(mealDescription: string) {
     const result = await estimateMealMacronutrients({ mealDescription });
     return result;
   } catch (error: any) {
-    // Log the error for internal tracking
+    // Log the full error for debugging
     console.error('GENKIT_FLOW_ERROR:', error);
     
-    // Provide a clean error message to the user
-    // The prefixing of 'googleai/' in the flow should resolve the 404 issue
+    // Check for specific 404/NOT_FOUND errors which indicate API propagation delay
+    if (error.message?.includes('404') || error.message?.includes('NOT_FOUND')) {
+      throw new Error('AI Model is still initializing. This usually happens for a few minutes after a new API key is created. Please try again in 2-3 minutes.');
+    }
+    
     const message = error.message || 'The AI service is currently unavailable. Please try again in a moment.';
     throw new Error(message);
   }
