@@ -10,25 +10,21 @@ export async function logMealWithAI(mealDescription: string) {
   try {
     const result = await estimateMealMacronutrients({ mealDescription });
     if (!result || !result.mealName) {
-      throw new Error('AI returned an empty response. Please try describing the meal differently.');
+      throw new Error('AI was unable to analyze this meal. Please try a different description.');
     }
     return result;
   } catch (error: any) {
     const errorMsg = error.message || String(error);
     console.error('AI Flow Error:', errorMsg);
     
-    // Check for 403 Forbidden / Permission Denied errors
+    // Check for common permission/configuration errors
     const isPermissionError = errorMsg.includes('403') || 
-                             errorMsg.includes('Generative Language API') ||
                              errorMsg.includes('PERMISSION_DENIED') ||
                              errorMsg.includes('API_KEY_INVALID');
 
     if (isPermissionError) {
       throw new Error(
-        "AI Permission Error. Please check these two things:\n\n" +
-        "1. API Key Restrictions: Go to the Google Cloud Console (APIs & Services > Credentials), find your API key, and ensure 'Generative Language API' is NOT restricted, or explicitly allowed.\n\n" +
-        "2. API Enablement: Ensure the 'Generative Language API' is enabled for project 268822938094.\n\n" +
-        "If both are correct, it may take a few more minutes to sync."
+        "AI Authentication Error. Please verify that your API Key is correctly configured and that the 'Generative Language API' is enabled in your Google Cloud Console."
       );
     }
     
