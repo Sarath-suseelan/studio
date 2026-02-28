@@ -13,18 +13,17 @@ export async function logMealWithAI(mealDescription: string) {
   } catch (error: any) {
     console.error('AI Action Error:', error);
     
-    // Check for specific API enablement error (403 Forbidden)
     const errorMsg = error.message || '';
+    // Specifically looking for 403 Forbidden which indicates API not enabled
     const isApiNotEnabled = errorMsg.includes('403') || 
                            errorMsg.includes('Generative Language API') ||
-                           errorMsg.includes('not been used') ||
                            errorMsg.includes('PERMISSION_DENIED');
 
     if (isApiNotEnabled) {
-      throw new Error('AI services are disabled. Please go to https://console.cloud.google.com/apis/library/generativelanguage.googleapis.com and click ENABLE to fix this. It may take a minute to activate.');
+      // The project ID/number is derived from your Firebase config (268822938094)
+      throw new Error('AI services are disabled. Please go to https://console.cloud.google.com/apis/library/generativelanguage.googleapis.com?project=268822938094 and click ENABLE to fix this. It takes about a minute to activate.');
     }
     
-    // Propagate a more descriptive error message to the UI
-    throw new Error(error.message || 'Failed to estimate macronutrients. Please check your meal description and try again.');
+    throw new Error(error.message || 'Failed to analyze meal. Please try a different description.');
   }
 }
