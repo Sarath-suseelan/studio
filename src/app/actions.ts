@@ -10,23 +10,28 @@ export async function logMealWithAI(mealDescription: string) {
   try {
     const result = await estimateMealMacronutrients({ mealDescription });
     if (!result || !result.mealName) {
-      throw new Error('AI returned an invalid response. Please try describing the meal differently.');
+      throw new Error('AI returned an empty response. Please try describing the meal differently.');
     }
     return result;
   } catch (error: any) {
     const errorMsg = error.message || String(error);
-    console.error('Detailed AI Error:', errorMsg);
+    console.error('AI Flow Error:', errorMsg);
     
-    // Check if it's specifically a permission/enablement error
+    // Check for 403 Forbidden / Permission Denied errors
     const isPermissionError = errorMsg.includes('403') || 
                              errorMsg.includes('Generative Language API') ||
-                             errorMsg.includes('PERMISSION_DENIED');
+                             errorMsg.includes('PERMISSION_DENIED') ||
+                             errorMsg.includes('API_KEY_INVALID');
 
     if (isPermissionError) {
-      // If it's still failing after enablement, it might be propagation delay
-      throw new Error('AI service is still initializing. Since you just enabled it, please wait 1-2 minutes and try again. If it persists, ensure your API key has no restrictions.');
+      throw new Error(
+        "AI Permission Error. Please check these two things:\n\n" +
+        "1. API Key Restrictions: Go to the Google Cloud Console (APIs & Services > Credentials), find your API key, and ensure 'Generative Language API' is NOT restricted, or explicitly allowed.\n\n" +
+        "2. API Enablement: Ensure the 'Generative Language API' is enabled for project 268822938094.\n\n" +
+        "If both are correct, it may take a few more minutes to sync."
+      );
     }
     
-    throw new Error(errorMsg || 'Failed to analyze meal. Please try a different description.');
+    throw new Error(errorMsg || 'Failed to analyze meal. Please try again.');
   }
 }
