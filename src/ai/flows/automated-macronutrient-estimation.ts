@@ -38,6 +38,7 @@ export async function estimateMealMacronutrients(input: EstimateMealMacronutrien
 
 const prompt = ai.definePrompt({
   name: 'automatedMacronutrientEstimationPrompt',
+  model: 'googleai/gemini-1.5-flash', // Explicitly setting the model identifier
   input: { schema: EstimateMealMacronutrientsInputSchema },
   output: { schema: EstimateMealMacronutrientsOutputSchema },
   system: 'You are a precise nutritional analysis engine. Break down meals into calories, macros (carbs, protein, fat), and ingredients based on common nutritional databases. Provide realistic estimates based on standard portions.',
@@ -62,7 +63,7 @@ const automatedMacronutrientEstimationFlow = ai.defineFlow(
       }
       return output;
     } catch (e: any) {
-      console.error('Flow execution error:', e);
+      // Re-throwing to be caught by the server action
       throw e;
     }
   }

@@ -1,4 +1,3 @@
-
 'use server';
 
 import { estimateMealMacronutrients } from '@/ai/flows/automated-macronutrient-estimation';
@@ -16,22 +15,22 @@ export async function logMealWithAI(mealDescription: string) {
     return result;
   } catch (error: any) {
     const errorMsg = error.message || String(error);
-    console.error('AI Flow Error Details:', error);
+    console.error('GENKIT_FLOW_ERROR_DEBUG:', error);
     
-    // 404: Model not found
+    // Check for 404 specifically
     if (errorMsg.includes('404') || errorMsg.includes('not found')) {
       throw new Error(
-        "AI model not found (404). This usually means the 'Generative Language API' is not enabled or the API key does not have access to Gemini 1.5 Flash. Please check your Google Cloud Console."
+        "AI model not found (404). Please ensure 'Generative Language API' is enabled at: https://console.cloud.google.com/apis/library/generativelanguage.googleapis.com?project=studio-9575638122-44bb6"
       );
     }
 
-    // 403: Permission denied
+    // Check for 403
     if (errorMsg.includes('403') || errorMsg.includes('PERMISSION_DENIED')) {
       throw new Error(
-        "AI services are currently unavailable (403). Check if your API key has IP, Referrer, or API restrictions in the Google Cloud Console (Credentials section)."
+        "AI access denied (403). Ensure your API key has no restrictions and the API is enabled."
       );
     }
     
-    throw new Error(`Failed to analyze meal: ${errorMsg.slice(0, 150)}`);
+    throw new Error(`AI Analysis Failed: ${errorMsg.slice(0, 100)}`);
   }
 }
