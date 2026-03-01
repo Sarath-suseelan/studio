@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useRef } from 'react';
@@ -21,17 +22,47 @@ export default function AnalyzePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const { user } = useUser();
-  const { firestore } = useFirestore ? { firestore: useFirestore() } : { firestore: null };
+  const { firestore } = useFirestore();
   const { toast } = useToast();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Client-side image compression and resizing
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setImage(reader.result as string);
-        setResult(null);
-        setError(null);
+      reader.onload = (event) => {
+        const img = new (window as any).Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 1200;
+          const MAX_HEIGHT = 1200;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+
+          // Convert to compressed JPEG data URI
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+          setImage(compressedDataUrl);
+          setResult(null);
+          setError(null);
+        };
       };
       reader.readAsDataURL(file);
     }
@@ -181,25 +212,25 @@ export default function AnalyzePage() {
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                     <div className="p-3 bg-white rounded-xl shadow-sm border text-center">
                       <div className="text-2xl font-black text-primary">
-                        {result.foodItems.reduce((acc, curr) => acc + curr.estimatedMacros.calories, 0)}
+                        {Math.round(result.foodItems.reduce((acc, curr) => acc + curr.estimatedMacros.calories, 0))}
                       </div>
                       <div className="text-[10px] font-bold text-muted-foreground uppercase">Calories</div>
                     </div>
                     <div className="p-3 bg-white rounded-xl shadow-sm border text-center">
                       <div className="text-2xl font-black text-secondary">
-                        {result.foodItems.reduce((acc, curr) => acc + curr.estimatedMacros.protein, 0)}g
+                        {Math.round(result.foodItems.reduce((acc, curr) => acc + curr.estimatedMacros.protein, 0))}g
                       </div>
                       <div className="text-[10px] font-bold text-muted-foreground uppercase">Protein</div>
                     </div>
                     <div className="p-3 bg-white rounded-xl shadow-sm border text-center">
                       <div className="text-2xl font-black text-chart-3">
-                        {result.foodItems.reduce((acc, curr) => acc + curr.estimatedMacros.carbs, 0)}g
+                        {Math.round(result.foodItems.reduce((acc, curr) => acc + curr.estimatedMacros.carbs, 0))}g
                       </div>
                       <div className="text-[10px] font-bold text-muted-foreground uppercase">Carbs</div>
                     </div>
                     <div className="p-3 bg-white rounded-xl shadow-sm border text-center">
                       <div className="text-2xl font-black text-chart-4">
-                        {result.foodItems.reduce((acc, curr) => acc + curr.estimatedMacros.fat, 0)}g
+                        {Math.round(result.foodItems.reduce((acc, curr) => acc + curr.estimatedMacros.fat, 0))}g
                       </div>
                       <div className="text-[10px] font-bold text-muted-foreground uppercase">Fat</div>
                     </div>
@@ -213,7 +244,7 @@ export default function AnalyzePage() {
                           <p className="font-semibold">{item.name}</p>
                           <p className="text-xs text-muted-foreground">P: {item.estimatedMacros.protein}g • C: {item.estimatedMacros.carbs}g • F: {item.estimatedMacros.fat}g</p>
                         </div>
-                        <div className="font-bold text-primary">{item.estimatedMacros.calories} kcal</div>
+                        <div className="font-bold text-primary">{Math.round(item.estimatedMacros.calories)} kcal</div>
                       </div>
                     ))}
                   </div>
