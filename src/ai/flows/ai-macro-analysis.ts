@@ -39,7 +39,7 @@ const aiMacroAnalysisPrompt = ai.definePrompt({
   name: 'aiMacroAnalysisPrompt',
   input: {schema: AIMacroAnalysisInputSchema},
   output: {schema: AIMacroAnalysisOutputSchema},
-  model: 'googleai/gemini-1.5-flash',
+  // We rely on the default model defined in src/ai/genkit.ts
   prompt: `You are an expert nutritionist and food analyst. 
   
   Your task is to:
