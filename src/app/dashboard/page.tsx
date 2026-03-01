@@ -1,14 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Navbar } from '@/components/layout/Navbar';
 import { MacroCard } from '@/components/macros/MacroCard';
 import { MOCK_USER_GOALS, MOCK_DAILY_LOGS } from '@/lib/mock-data';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, ChevronRight, Utensils, Zap, Flame, Trophy } from 'lucide-react';
+import { Plus, ChevronRight, Utensils, Zap, Flame, Trophy, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { useUser } from '@/firebase';
 import { 
   BarChart, 
   Bar, 
@@ -21,10 +23,26 @@ import {
 
 export default function DashboardPage() {
   const [mounted, setMounted] = useState(false);
+  const { user, isUserLoading } = useUser();
+  const router = useRouter();
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (!isUserLoading && !user) {
+      router.push('/auth/login');
+    }
+  }, [user, isUserLoading, router]);
+
+  if (isUserLoading || !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-10 h-10 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   const totals = MOCK_DAILY_LOGS.reduce(
     (acc, curr) => ({
@@ -48,7 +66,7 @@ export default function DashboardPage() {
       <main className="container mx-auto px-4 py-8 max-w-5xl">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-headline font-bold">Good morning, Alex! 👋</h1>
+            <h1 className="text-3xl font-headline font-bold">Good morning, {user.displayName?.split(' ')[0] || 'User'}! 👋</h1>
             <p className="text-muted-foreground">Here's your nutritional summary for today.</p>
           </div>
           <div className="flex gap-2">

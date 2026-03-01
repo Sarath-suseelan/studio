@@ -1,13 +1,51 @@
-
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useAuth, useUser } from '@/firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const { auth } = useAuth ? { auth: useAuth() } : { auth: null };
+  const { user, isUserLoading } = useUser();
+  const router = useRouter();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (user && !isUserLoading) {
+      router.push('/dashboard');
+    }
+  }, [user, isUserLoading, router]);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!auth) return;
+
+    setIsLoading(true);
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      router.push('/dashboard');
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Login Failed',
+        description: error.message || 'Invalid email or password.',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md space-y-8">
@@ -27,22 +65,45 @@ export default function LoginPage() {
             <CardTitle>Login</CardTitle>
             <CardDescription>Enter your credentials to access your dashboard</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="alex@example.com" required className="h-12 rounded-xl" />
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <Label htmlFor="password">Password</Label>
-                <Link href="#" className="text-xs text-primary hover:underline">Forgot password?</Link>
+          <form onSubmit={handleLogin}>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input 
+                  id="email" 
+                  type="email" 
+                  placeholder="alex@example.com" 
+                  required 
+                  className="h-12 rounded-xl"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={isLoading}
+                />
               </div>
-              <Input id="password" type="password" required className="h-12 rounded-xl" />
-            </div>
-            <Button className="w-full h-12 text-lg font-bold shadow-xl shadow-primary/20" asChild>
-              <Link href="/dashboard">Sign In</Link>
-            </Button>
-          </CardContent>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <Label htmlFor="password">Password</Label>
+                  <Link href="#" className="text-xs text-primary hover:underline">Forgot password?</Link>
+                </div>
+                <Input 
+                  id="password" 
+                  type="password" 
+                  required 
+                  className="h-12 rounded-xl"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={isLoading}
+                />
+              </div>
+              <Button 
+                type="submit"
+                className="w-full h-12 text-lg font-bold shadow-xl shadow-primary/20" 
+                disabled={isLoading}
+              >
+                {isLoading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : 'Sign In'}
+              </Button>
+            </CardContent>
+          </form>
           <CardFooter className="flex flex-col gap-4">
             <div className="relative w-full">
               <div className="absolute inset-0 flex items-center">
@@ -53,8 +114,8 @@ export default function LoginPage() {
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4 w-full">
-              <Button variant="outline" className="h-12 rounded-xl">Google</Button>
-              <Button variant="outline" className="h-12 rounded-xl">Apple</Button>
+              <Button variant="outline" className="h-12 rounded-xl" disabled={isLoading}>Google</Button>
+              <Button variant="outline" className="h-12 rounded-xl" disabled={isLoading}>Apple</Button>
             </div>
           </CardFooter>
         </Card>

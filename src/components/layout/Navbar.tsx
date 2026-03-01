@@ -1,9 +1,8 @@
-
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { Home, Camera, BookOpen, User, PieChart, Menu } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { Home, Camera, BookOpen, User, PieChart, Menu, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { 
@@ -12,6 +11,8 @@ import {
   SheetTrigger 
 } from '@/components/ui/sheet';
 import { useState } from 'react';
+import { useAuth, useUser } from '@/firebase';
+import { signOut } from 'firebase/auth';
 
 const NAV_ITEMS = [
   { name: 'Dashboard', href: '/dashboard', icon: PieChart },
@@ -22,7 +23,20 @@ const NAV_ITEMS = [
 
 export function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
+  const { auth } = useAuth ? { auth: useAuth() } : { auth: null };
+  const { user } = useUser();
+
+  const handleLogout = async () => {
+    if (!auth) return;
+    try {
+      await signOut(auth);
+      router.push('/');
+    } catch (error) {
+      console.error('Logout failed', error);
+    }
+  };
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md">
@@ -49,9 +63,15 @@ export function Navbar() {
               {item.name}
             </Link>
           ))}
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/auth/login">Logout</Link>
-          </Button>
+          {user ? (
+            <Button variant="ghost" size="sm" onClick={handleLogout} className="text-muted-foreground hover:text-destructive">
+              <LogOut className="w-4 h-4 mr-2" /> Logout
+            </Button>
+          ) : (
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/auth/login">Login</Link>
+            </Button>
+          )}
         </div>
 
         {/* Mobile Nav Toggle */}
@@ -78,9 +98,15 @@ export function Navbar() {
                     {item.name}
                   </Link>
                 ))}
-                <Button className="mt-4" asChild>
-                  <Link href="/auth/login" onClick={() => setIsOpen(false)}>Logout</Link>
-                </Button>
+                {user ? (
+                  <Button variant="destructive" className="mt-4" onClick={() => { handleLogout(); setIsOpen(false); }}>
+                    <LogOut className="w-4 h-4 mr-2" /> Logout
+                  </Button>
+                ) : (
+                  <Button className="mt-4" asChild>
+                    <Link href="/auth/login" onClick={() => setIsOpen(false)}>Login</Link>
+                  </Button>
+                )}
               </div>
             </SheetContent>
           </Sheet>
