@@ -1,13 +1,14 @@
+
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useAuth, useFirestore, useUser } from '@/firebase';
+import { useAuth, useFirestore } from '@/firebase';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { doc, serverTimestamp } from 'firebase/firestore';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
@@ -20,17 +21,10 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { auth } = useAuth ? { auth: useAuth() } : { auth: null };
-  const { firestore } = useFirestore ? { firestore: useFirestore() } : { firestore: null };
-  const { user, isUserLoading } = useUser();
+  const { auth } = { auth: useAuth() };
+  const { firestore } = { firestore: useFirestore() };
   const router = useRouter();
   const { toast } = useToast();
-
-  useEffect(() => {
-    if (user && !isUserLoading) {
-      router.push('/dashboard');
-    }
-  }, [user, isUserLoading, router]);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -124,7 +118,7 @@ export default function RegisterPage() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">Email</Link>
                 <Input 
                   id="email" 
                   type="email" 

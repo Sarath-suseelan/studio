@@ -1,10 +1,15 @@
+
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { BookOpen, CheckCircle2, ChevronRight, Zap } from 'lucide-react';
+import { BookOpen, CheckCircle2, Zap, Loader2 } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { useUser } from '@/firebase';
 
 export default function Home() {
+  const { user, isUserLoading } = useUser();
   const heroImage = PlaceHolderImages.find(img => img.id === 'hero-food');
 
   return (
@@ -17,12 +22,22 @@ export default function Home() {
           <span className="font-headline font-bold text-xl tracking-tight text-primary">MacroMentor</span>
         </Link>
         <nav className="ml-auto flex gap-4 sm:gap-6">
-          <Button variant="ghost" asChild>
-            <Link href="/auth/login">Login</Link>
-          </Button>
-          <Button asChild>
-            <Link href="/auth/register">Sign Up</Link>
-          </Button>
+          {isUserLoading ? (
+            <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+          ) : user ? (
+            <Button asChild>
+              <Link href="/dashboard">Dashboard</Link>
+            </Button>
+          ) : (
+            <>
+              <Button variant="ghost" asChild>
+                <Link href="/auth/login">Login</Link>
+              </Button>
+              <Button asChild>
+                <Link href="/auth/register">Sign Up</Link>
+              </Button>
+            </>
+          )}
         </nav>
       </header>
 
@@ -40,12 +55,20 @@ export default function Home() {
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                  <Button size="lg" className="px-8" asChild>
-                    <Link href="/auth/register">Get Started Free</Link>
-                  </Button>
-                  <Button variant="outline" size="lg" className="px-8" asChild>
-                    <Link href="/auth/login">View Dashboard</Link>
-                  </Button>
+                  {user ? (
+                    <Button size="lg" className="px-8" asChild>
+                      <Link href="/dashboard">Go to Dashboard</Link>
+                    </Button>
+                  ) : (
+                    <>
+                      <Button size="lg" className="px-8" asChild>
+                        <Link href="/auth/register">Get Started Free</Link>
+                      </Button>
+                      <Button variant="outline" size="lg" className="px-8" asChild>
+                        <Link href="/auth/login">Sign In</Link>
+                      </Button>
+                    </>
+                  )}
                 </div>
                 <div className="flex items-center space-x-4 text-sm text-muted-foreground">
                   <div className="flex items-center gap-1"><CheckCircle2 className="w-4 h-4 text-primary" /> Easy Tracking</div>
