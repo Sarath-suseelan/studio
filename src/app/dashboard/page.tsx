@@ -1,6 +1,6 @@
-
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { MacroCard } from '@/components/macros/MacroCard';
 import { MOCK_USER_GOALS, MOCK_DAILY_LOGS } from '@/lib/mock-data';
@@ -8,18 +8,24 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, ChevronRight, Utensils, Zap, Flame, Trophy } from 'lucide-react';
 import Link from 'next/link';
+import { cn } from '@/lib/utils';
 import { 
   BarChart, 
   Bar, 
   XAxis, 
   YAxis, 
-  CartesianGrid, 
   Tooltip, 
   ResponsiveContainer,
   Cell
 } from 'recharts';
 
 export default function DashboardPage() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const totals = MOCK_DAILY_LOGS.reduce(
     (acc, curr) => ({
       calories: acc.calories + curr.calories,
@@ -55,7 +61,6 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Top summary card */}
         <Card className="mb-8 border-none shadow-xl bg-gradient-to-br from-primary to-secondary text-primary-foreground overflow-hidden">
           <CardContent className="p-8">
             <div className="grid md:grid-cols-2 gap-8 items-center">
@@ -80,21 +85,23 @@ export default function DashboardPage() {
                 </div>
               </div>
               <div className="h-[180px] w-full bg-white/10 rounded-2xl p-4">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData} layout="vertical" margin={{ left: -20 }}>
-                    <XAxis type="number" hide />
-                    <YAxis dataKey="name" type="category" stroke="white" tick={{fontSize: 12}} width={70} />
-                    <Tooltip 
-                      cursor={{fill: 'rgba(255,255,255,0.1)'}} 
-                      contentStyle={{borderRadius: '8px', border: 'none'}}
-                    />
-                    <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={20}>
-                      {chartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.fill} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
+                {mounted && (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={chartData} layout="vertical" margin={{ left: -20 }}>
+                      <XAxis type="number" hide />
+                      <YAxis dataKey="name" type="category" stroke="white" tick={{fontSize: 12}} width={70} />
+                      <Tooltip 
+                        cursor={{fill: 'rgba(255,255,255,0.1)'}} 
+                        contentStyle={{borderRadius: '8px', border: 'none'}}
+                      />
+                      <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={20}>
+                        {chartData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.fill} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                )}
               </div>
             </div>
           </CardContent>
@@ -144,7 +151,9 @@ export default function DashboardPage() {
                       </div>
                       <div>
                         <h4 className="font-semibold">{log.name}</h4>
-                        <p className="text-xs text-muted-foreground capitalize">{log.type} • {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                        <p className="text-xs text-muted-foreground capitalize">
+                          {log.type} • {mounted ? new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}
+                        </p>
                       </div>
                     </div>
                     <div className="text-right">
