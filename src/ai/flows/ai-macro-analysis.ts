@@ -37,7 +37,7 @@ export type AIMacroAnalysisOutput = z.infer<typeof AIMacroAnalysisOutputSchema>;
 
 const aiMacroAnalysisPrompt = ai.definePrompt({
   name: 'aiMacroAnalysisPrompt',
-  model: 'gemini-1.5-flash',
+  model: 'googleai/gemini-1.5-flash',
   input: {schema: AIMacroAnalysisInputSchema},
   output: {schema: AIMacroAnalysisOutputSchema},
   prompt: `You are an expert nutritionist and food analyst. 
