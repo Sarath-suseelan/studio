@@ -1,3 +1,22 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "hero-food",
+      "description": "A healthy bowl of salad with avocado and seeds",
+      "imageUrl": "https://images.unsplash.com/photo-1498837167922-ddd27525d352?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxoZWFsdGh5JTIwZm9vZHxlbnwwfHx8fDE3NzIyODk1ODJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "healthy food"
+    },
+    {
+      "id": "feature-analysis",
+      "description": "Smartphone taking a photo of a meal",
+      "imageUrl": "https://images.unsplash.com/photo-1546549032-9571cd6b27df?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxmb29kJTIwcGhvdG9ncmFwaHl8ZW58MHx8fHwxNzcyMzQ2NDU4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "food photography"
+    },
+    {
+      "id": "feature-dashboard",
+      "description": "Macro tracking charts on a screen",
+      "imageUrl": "https://images.unsplash.com/photo-1744782211816-c5224434614f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxkYXRhJTIwY2hhcnRzfGVufDB8fHx8MTc3MjI2MDM0MXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "data charts"
+    }
+  ]
 }
