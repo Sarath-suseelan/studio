@@ -1,0 +1,417 @@
+{
+  "entities": {
+    "UserProfile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserProfile",
+      "type": "object",
+      "description": "Represents a user's profile information, dietary goals, and preferences within the MacroMentor application. This data is linked to an authenticated user from an external system.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the UserProfile entity. This ID typically links to an external authentication system's user ID."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "The user's preferred display name."
+        },
+        "email": {
+          "type": "string",
+          "description": "The user's email address, used for communication and display, not for authentication credentials.",
+          "format": "email"
+        },
+        "dateOfBirth": {
+          "type": "string",
+          "description": "The user's date of birth.",
+          "format": "date"
+        },
+        "gender": {
+          "type": "string",
+          "description": "The user's gender (e.g., 'male', 'female', 'non-binary', 'prefer not to say')."
+        },
+        "heightCm": {
+          "type": "number",
+          "description": "The user's current height in centimeters."
+        },
+        "weightKg": {
+          "type": "number",
+          "description": "The user's current weight in kilograms."
+        },
+        "activityLevel": {
+          "type": "string",
+          "description": "The user's self-reported activity level, influencing macro calculations (e.g., 'sedentary', 'lightlyActive', 'moderatelyActive', 'veryActive')."
+        },
+        "goalWeightKg": {
+          "type": "number",
+          "description": "The user's target weight in kilograms."
+        },
+        "dailyCalorieGoal": {
+          "type": "number",
+          "description": "The user's daily target calorie intake."
+        },
+        "dailyProteinGoalGrams": {
+          "type": "number",
+          "description": "The user's daily target protein intake in grams."
+        },
+        "dailyCarbGoalGrams": {
+          "type": "number",
+          "description": "The user's daily target carbohydrate intake in grams."
+        },
+        "dailyFatGoalGrams": {
+          "type": "number",
+          "description": "The user's daily target fat intake in grams."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the user profile was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the user profile was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "displayName",
+        "email",
+        "dateOfBirth",
+        "gender",
+        "heightCm",
+        "weightKg",
+        "activityLevel",
+        "dailyCalorieGoal",
+        "dailyProteinGoalGrams",
+        "dailyCarbGoalGrams",
+        "dailyFatGoalGrams",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "FoodItem": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "FoodItem",
+      "type": "object",
+      "description": "Represents a single food item with its macronutrient information and serving size details, used for manual meal logging and as a reference for AI analysis.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the FoodItem entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The common name of the food item (e.g., 'Apple', 'Chicken Breast')."
+        },
+        "description": {
+          "type": "string",
+          "description": "A brief description or additional details about the food item."
+        },
+        "caloriesPerServing": {
+          "type": "number",
+          "description": "The number of calories contained in one defined serving of this food item."
+        },
+        "proteinPerServingGrams": {
+          "type": "number",
+          "description": "The amount of protein in grams per defined serving of this food item."
+        },
+        "carbsPerServingGrams": {
+          "type": "number",
+          "description": "The amount of carbohydrates in grams per defined serving of this food item."
+        },
+        "fatPerServingGrams": {
+          "type": "number",
+          "description": "The amount of fat in grams per defined serving of this food item."
+        },
+        "servingSizeUnit": {
+          "type": "string",
+          "description": "The unit of measurement for one serving (e.g., 'gram', 'ounce', 'piece', 'cup')."
+        },
+        "servingSizeValue": {
+          "type": "number",
+          "description": "The quantity of the serving unit that constitutes one serving (e.g., '100' for grams, '1' for piece)."
+        },
+        "isSystemFood": {
+          "type": "boolean",
+          "description": "Indicates if this food item is part of the application's comprehensive, pre-populated database (true) or was created by a user (false)."
+        },
+        "createdByUserId": {
+          "type": "string",
+          "description": "Reference to UserProfile for the user who created this custom food item, if 'isSystemFood' is false. (Relationship: UserProfile 1:N FoodItem)"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "caloriesPerServing",
+        "proteinPerServingGrams",
+        "carbsPerServingGrams",
+        "fatPerServingGrams",
+        "servingSizeUnit",
+        "servingSizeValue",
+        "isSystemFood"
+      ]
+    },
+    "MealLog": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "MealLog",
+      "type": "object",
+      "description": "Represents a single logged meal instance by a user, including when it was consumed and its general type.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the MealLog entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to UserProfile, indicating which user logged this meal. (Relationship: UserProfile 1:N MealLog)"
+        },
+        "logDateTime": {
+          "type": "string",
+          "description": "The date and time when the meal was consumed or formally logged by the user.",
+          "format": "date-time"
+        },
+        "mealType": {
+          "type": "string",
+          "description": "The type of meal (e.g., 'Breakfast', 'Lunch', 'Dinner', 'Snack', 'Other')."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Optional notes or comments provided by the user about this meal."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "logDateTime",
+        "mealType"
+      ]
+    },
+    "MealEntry": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "MealEntry",
+      "type": "object",
+      "description": "Represents a specific food item consumed as part of a MealLog, including its quantity and how it was added.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the MealEntry entity."
+        },
+        "mealLogId": {
+          "type": "string",
+          "description": "Reference to MealLog, indicating which meal this entry belongs to. (Relationship: MealLog 1:N MealEntry)"
+        },
+        "foodItemId": {
+          "type": "string",
+          "description": "Reference to FoodItem, indicating the specific food item consumed. (Relationship: FoodItem 1:N MealEntry)"
+        },
+        "quantity": {
+          "type": "number",
+          "description": "The number of servings of the specified food item consumed."
+        },
+        "source": {
+          "type": "string",
+          "description": "Indicates how this meal entry was created (e.g., 'manual' via search, 'ai_image' from analysis)."
+        },
+        "associatedImageAnalysisId": {
+          "type": "string",
+          "description": "Reference to FoodImageAnalysis if this entry originated from an AI image analysis. (Relationship: FoodImageAnalysis 1:1 MealEntry)"
+        }
+      },
+      "required": [
+        "id",
+        "mealLogId",
+        "foodItemId",
+        "quantity",
+        "source"
+      ]
+    },
+    "FoodImageAnalysis": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "FoodImageAnalysis",
+      "type": "object",
+      "description": "Stores the raw results of an AI-powered macronutrient analysis performed on an uploaded food image.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the FoodImageAnalysis entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to UserProfile, indicating which user initiated the analysis. (Relationship: UserProfile 1:N FoodImageAnalysis)"
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "The URL of the uploaded food image that was analyzed by the AI.",
+          "format": "uri"
+        },
+        "analysisDateTime": {
+          "type": "string",
+          "description": "The timestamp indicating when the AI analysis was performed.",
+          "format": "date-time"
+        },
+        "estimatedCalories": {
+          "type": "number",
+          "description": "The AI's estimated total calories for the food content detected in the image."
+        },
+        "estimatedProteinGrams": {
+          "type": "number",
+          "description": "The AI's estimated total protein in grams for the food content in the image."
+        },
+        "estimatedCarbsGrams": {
+          "type": "number",
+          "description": "The AI's estimated total carbohydrates in grams for the food content in the image."
+        },
+        "estimatedFatGrams": {
+          "type": "number",
+          "description": "The AI's estimated total fat in grams for the food content in the image."
+        },
+        "confidenceScore": {
+          "type": "number",
+          "description": "A score indicating the AI model's confidence in its analysis result (e.g., a value between 0 and 1)."
+        },
+        "isLoggedAsMealEntry": {
+          "type": "boolean",
+          "description": "Indicates whether this specific AI analysis result has been formally logged by the user as a MealEntry."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "imageUrl",
+        "analysisDateTime",
+        "estimatedCalories",
+        "estimatedProteinGrams",
+        "estimatedCarbsGrams",
+        "estimatedFatGrams",
+        "isLoggedAsMealEntry"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "UserProfile",
+          "schema": {
+            "$ref": "#/backend/entities/UserProfile"
+          },
+          "description": "Stores the profile information, dietary goals, and preferences for a specific user. This document's ID corresponds to the authenticated user's UID (userId), and it is directly owned by that user.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user, matching 'request.auth.uid'."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/system_food_items/{foodItemId}",
+        "definition": {
+          "entityName": "FoodItem",
+          "schema": {
+            "$ref": "#/backend/entities/FoodItem"
+          },
+          "description": "Stores system-wide, public food items accessible to all users for searching and logging. These items are read-only for all users and have 'isSystemFood' set to true.",
+          "params": [
+            {
+              "name": "foodItemId",
+              "description": "The unique identifier for a system food item."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/custom_food_items/{foodItemId}",
+        "definition": {
+          "entityName": "FoodItem",
+          "schema": {
+            "$ref": "#/backend/entities/FoodItem"
+          },
+          "description": "Stores custom food items created by a specific user. These items are owned and modifiable only by the creating user. The 'createdByUserId' field on the document must match the 'userId' in the path for authorization and 'isSystemFood' is false.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who created this custom food item, matching 'request.auth.uid'."
+            },
+            {
+              "name": "foodItemId",
+              "description": "The unique identifier for a custom food item."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/meal_logs/{mealLogId}",
+        "definition": {
+          "entityName": "MealLog",
+          "schema": {
+            "$ref": "#/backend/entities/MealLog"
+          },
+          "description": "Stores a specific meal log for a user, including its date, time, and type. Owned by the user, and the 'userId' field on the document must match the 'userId' in the path for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who owns this meal log, matching 'request.auth.uid'."
+            },
+            {
+              "name": "mealLogId",
+              "description": "The unique identifier for a specific meal log."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/meal_logs/{mealLogId}/meal_entries/{mealEntryId}",
+        "definition": {
+          "entityName": "MealEntry",
+          "schema": {
+            "$ref": "#/backend/entities/MealEntry"
+          },
+          "description": "Stores a specific food item entry within a user's meal log. Access is granted to the 'userId' in the parent path, which represents the owner of the parent 'MealLog'. The 'mealLogId' field on the document must match the 'mealLogId' in the path for authorization and data integrity.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who owns the parent meal log."
+            },
+            {
+              "name": "mealLogId",
+              "description": "The unique identifier of the parent meal log."
+            },
+            {
+              "name": "mealEntryId",
+              "description": "The unique identifier for a specific meal entry."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/food_image_analyses/{analysisId}",
+        "definition": {
+          "entityName": "FoodImageAnalysis",
+          "schema": {
+            "$ref": "#/backend/entities/FoodImageAnalysis"
+          },
+          "description": "Stores the raw results of AI analysis for a user's uploaded food image. Owned by the user, and the 'userId' field on the document must match the 'userId' in the path for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who initiated the food image analysis, matching 'request.auth.uid'."
+            },
+            {
+              "name": "analysisId",
+              "description": "The unique identifier for a specific food image analysis result."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore data structure for MacroMentor is designed with a strong emphasis on Authorization Independence, Structural Segregation, and clear Access Modeling to ensure robust security, scalability, and debuggability. All user-specific data is organized under a top-level `/users/{userId}` collection, where the `{userId}` wildcard directly corresponds to the authenticated user's UID (`request.auth.uid`). This foundational pattern immediately fulfills the Authorization Independence principle by making the owner's ID available in the path, eliminating the need for expensive and complex `get()` calls in security rules to determine ownership.\n\n**Authorization Independence:**\n1.  **Path-Based Ownership:** For `UserProfile`, `MealLog`, `FoodImageAnalysis`, and user-specific `FoodItem` (custom foods), the `{userId}` in the path `/users/{userId}/...` makes `request.auth.uid == userId` the primary and sufficient authorization check. This ensures that a user can only access their own data.\n2.  **Denormalization for Clarity & Consistency:** While the path already provides the `userId`, several entities (`MealLog`, `FoodImageAnalysis`, user-created `FoodItem`) also include `userId` or `createdByUserId` as a field within the document. This denormalization offers explicit clarity and acts as a secondary invariant check, ensuring data consistency (e.g., `resource.data.userId == userId` in rules) without *requiring* a `get()` call. For `MealEntry`, its parent `MealLog` is already under the user's path, and the `mealLogId` is denormalized within `MealEntry` to match the path wildcard. This structure prevents circular dependencies and complex rule evaluations.\n\n**Structural Segregation & QAPs (Query Against Paths):**\n1.  **User Data Segregation:** All personal user data is stored under `/users/{userId}/...`. This ensures that `list` operations (QAPs) are inherently secure; a user can only `list` documents within their own `/users/{userId}/` subtree. For instance, `/users/{userId}/meal_logs` allows listing all meal logs for that specific user, without needing additional filtering in rules.\n2.  **Public vs. Private Food Items:** The `FoodItem` entity, which has both system-wide (public) and user-created (private) instances, is segregated into two distinct collections:\n    *   `/system_food_items`: Stores all publicly accessible, read-only food items. `list` operations here are secure as all documents have the same public read security posture.\n    *   `/users/{userId}/custom_food_items`: Stores private food items created by a specific user. Access is restricted to the owning user, and `list` operations are secure within the user's scope.\n\nThis design strategy allows for simple and explicit security rules (e.g., `allow read, write: if request.auth.uid == userId;`) which are easy to write, test, and debug, while supporting efficient and secure `list` queries across all collections."
+  }
+}

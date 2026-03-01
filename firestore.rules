@@ -1,0 +1,129 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * MACROMENTOR SECURITY RULES
+     *
+     * Core Philosophy: This ruleset enforces a strict user-ownership model where all personal 
+     * health data is scoped under a unique user ID in the document path.
+     *
+     * Data Structure: Data is organized hierarchically. User-specific documents (profiles, 
+     * custom food items, meal logs, entries, and image analyses) are nested under 
+     * /users/{userId}. System-wide reference data is stored in /system_food_items.
+     *
+     * Key Security Decisions:
+     * 1. Path-Based Authorization: We rely on the {userId} wildcard in the path to match 
+     *    the authenticated user's UID (request.auth.uid).
+     * 2. Denormalization for Integrity: Relational fields (like userId, mealLogId) are 
+     *    enforced at the data level to match the path variables, ensuring consistency 
+     *    without extra lookups.
+     * 3. Prototyping Flexibility: Rules focus strictly on authorization and relational 
+     *    integrity. Schema validation (types, required fields) is deferred to the 
+     *    application layer to allow for rapid iteration.
+     * 4. Private by Default: All user data collections are private to the owner. 
+     *    Global listing of users is strictly prohibited.
+     */
+
+    // --- Helper Functions ---
+
+    /** @description Checks if the request is from an authenticated user. */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /** @description Checks if the authenticated user's UID matches the provided ID. */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /** @description Checks if the user is the owner and the document already exists. */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+    // --- Collection Rules ---
+
+    /**
+     * @description Rules for the root User Profile. Allows users to create their own profile and manage it.
+     * @path /users/{userId}
+     * @allow Authenticated user (create) where request.auth.uid == userId.
+     * @deny User 'A' (update) User 'B's profile.
+     * @principle Self-creation and strict ownership of the root user document.
+     */
+    match /users/{userId} {
+      allow get, list: if isOwner(userId);
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+      allow delete: if isExistingOwner(userId);
+
+      /**
+       * @description Custom food items created by the user.
+       * @path /users/{userId}/custom_food_items/{foodItemId}
+       * @allow User (create) a food item where createdByUserId matches their UID.
+       * @deny User (list) food items in another user's subcollection.
+       * @principle Path-based ownership for user-generated content.
+       */
+      match /custom_food_items/{foodItemId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) && request.resource.data.createdByUserId == userId;
+        allow update: if isExistingOwner(userId) && request.resource.data.createdByUserId == resource.data.createdByUserId;
+        allow delete: if isExistingOwner(userId);
+      }
+
+      /**
+       * @description User's meal logging history.
+       * @path /users/{userId}/meal_logs/{mealLogId}
+       * @allow User (update) their own meal log notes.
+       * @deny Unauthenticated user (get) any meal log.
+       * @principle Authorization independence via path-based scoping.
+       */
+      match /meal_logs/{mealLogId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) && request.resource.data.userId == userId;
+        allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+        allow delete: if isExistingOwner(userId);
+
+        /**
+         * @description Individual food entries within a specific meal log.
+         * @path /users/{userId}/meal_logs/{mealLogId}/meal_entries/{mealEntryId}
+         * @allow User (create) an entry that correctly references the parent mealLogId.
+         * @deny User (create) an entry where the mealLogId field does not match the URL path.
+         * @principle Relational integrity enforcement within owned subcollections.
+         */
+        match /meal_entries/{mealEntryId} {
+          allow get, list: if isOwner(userId);
+          allow create: if isOwner(userId) && request.resource.data.mealLogId == mealLogId;
+          allow update: if isExistingOwner(userId) && request.resource.data.mealLogId == resource.data.mealLogId;
+          allow delete: if isExistingOwner(userId);
+        }
+      }
+
+      /**
+       * @description Results of AI-powered food image analysis.
+       * @path /users/{userId}/food_image_analyses/{analysisId}
+       * @allow User (get) their own analysis results.
+       * @deny User (delete) another user's analysis record.
+       * @principle Secure storage of private AI processing results.
+       */
+      match /food_image_analyses/{analysisId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) && request.resource.data.userId == userId;
+        allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+        allow delete: if isExistingOwner(userId);
+      }
+    }
+
+    /**
+     * @description System-wide food database accessible to all authenticated users for search.
+     * @path /system_food_items/{foodItemId}
+     * @allow Any signed-in user (list) all system food items.
+     * @deny Any user (create/update/delete) system food items.
+     * @principle Read-only access to global reference data for authenticated users.
+     */
+    match /system_food_items/{foodItemId} {
+      allow get, list: if isSignedIn();
+      allow create, update, delete: if false;
+    }
+  }
+}
