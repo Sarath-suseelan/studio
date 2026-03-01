@@ -1,4 +1,3 @@
-
 export interface MacroEntry {
   id: string;
   name: string;
@@ -32,7 +31,7 @@ export const MOCK_DAILY_LOGS: MacroEntry[] = [
     protein: 12,
     carbs: 60,
     fat: 8,
-    timestamp: new Date().toISOString(),
+    timestamp: '2024-05-24T08:30:00.000Z',
     type: 'breakfast',
   },
   {
@@ -42,7 +41,7 @@ export const MOCK_DAILY_LOGS: MacroEntry[] = [
     protein: 45,
     carbs: 15,
     fat: 22,
-    timestamp: new Date().toISOString(),
+    timestamp: '2024-05-24T12:45:00.000Z',
     type: 'lunch',
   },
   {
@@ -52,7 +51,7 @@ export const MOCK_DAILY_LOGS: MacroEntry[] = [
     protein: 15,
     carbs: 10,
     fat: 5,
-    timestamp: new Date().toISOString(),
+    timestamp: '2024-05-24T16:20:00.000Z',
     type: 'snack',
   }
 ];
