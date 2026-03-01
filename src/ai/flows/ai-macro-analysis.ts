@@ -37,9 +37,9 @@ export type AIMacroAnalysisOutput = z.infer<typeof AIMacroAnalysisOutputSchema>;
 
 const aiMacroAnalysisPrompt = ai.definePrompt({
   name: 'aiMacroAnalysisPrompt',
+  model: 'googleai/gemini-1.5-flash',
   input: {schema: AIMacroAnalysisInputSchema},
   output: {schema: AIMacroAnalysisOutputSchema},
-  // We rely on the default model defined in src/ai/genkit.ts
   prompt: `You are an expert nutritionist and food analyst. 
   
   Your task is to:
