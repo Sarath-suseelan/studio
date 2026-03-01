@@ -1,8 +1,7 @@
-
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { Camera, CheckCircle2, ChevronRight, Zap } from 'lucide-react';
+import { BookOpen, CheckCircle2, ChevronRight, Zap } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 export default function Home() {
@@ -34,10 +33,10 @@ export default function Home() {
               <div className="flex flex-col justify-center space-y-4">
                 <div className="space-y-2">
                   <h1 className="text-4xl font-headline font-extrabold tracking-tighter sm:text-5xl xl:text-6xl/none text-foreground">
-                    Master Your Nutrition with <span className="text-primary">AI Intelligence</span>
+                    Master Your Nutrition with <span className="text-primary">Precision</span>
                   </h1>
                   <p className="max-w-[600px] text-muted-foreground md:text-xl">
-                    MacroMentor makes healthy eating effortless. Track your macros using just a photo, log meals manually, and reach your fitness goals faster.
+                    MacroMentor makes healthy eating effortless. Track your macros easily, log meals accurately, and reach your fitness goals faster.
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
@@ -45,11 +44,11 @@ export default function Home() {
                     <Link href="/auth/register">Get Started Free</Link>
                   </Button>
                   <Button variant="outline" size="lg" className="px-8" asChild>
-                    <Link href="/analyze">Try AI Analysis</Link>
+                    <Link href="/auth/login">View Dashboard</Link>
                   </Button>
                 </div>
                 <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                  <div className="flex items-center gap-1"><CheckCircle2 className="w-4 h-4 text-primary" /> AI-Powered</div>
+                  <div className="flex items-center gap-1"><CheckCircle2 className="w-4 h-4 text-primary" /> Easy Tracking</div>
                   <div className="flex items-center gap-1"><CheckCircle2 className="w-4 h-4 text-primary" /> Personalized</div>
                   <div className="flex items-center gap-1"><CheckCircle2 className="w-4 h-4 text-primary" /> Secure</div>
                 </div>
@@ -76,18 +75,18 @@ export default function Home() {
                 </div>
                 <h2 className="text-3xl font-headline font-bold tracking-tighter sm:text-5xl">Everything You Need to Track Better</h2>
                 <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  We've combined AI technology with a simple interface to help you stay on track without the headache.
+                  A simple interface designed to help you stay on track with your nutritional goals without the headache.
                 </p>
               </div>
             </div>
             <div className="mx-auto grid max-w-5xl items-center gap-6 py-12 lg:grid-cols-3 lg:gap-12">
               <div className="flex flex-col items-center space-y-4 rounded-2xl border bg-background p-6 shadow-sm hover:shadow-md transition-shadow">
                 <div className="rounded-full bg-primary/10 p-3">
-                  <Camera className="h-6 w-6 text-primary" />
+                  <BookOpen className="h-6 w-6 text-primary" />
                 </div>
-                <h3 className="text-xl font-bold">AI Photo Analysis</h3>
+                <h3 className="text-xl font-bold">Comprehensive Database</h3>
                 <p className="text-center text-muted-foreground">
-                  Just snap a photo of your meal. Our AI identifies food items and estimates macros instantly.
+                  Search through thousands of food items to log your meals accurately in seconds.
                 </p>
               </div>
               <div className="flex flex-col items-center space-y-4 rounded-2xl border bg-background p-6 shadow-sm hover:shadow-md transition-shadow">

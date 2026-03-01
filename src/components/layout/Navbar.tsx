@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, Camera, BookOpen, User, PieChart, Menu, LogOut } from 'lucide-react';
+import { Home, BookOpen, User, PieChart, Menu, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { 
@@ -16,7 +16,6 @@ import { signOut } from 'firebase/auth';
 
 const NAV_ITEMS = [
   { name: 'Dashboard', href: '/dashboard', icon: PieChart },
-  { name: 'Analyze', href: '/analyze', icon: Camera },
   { name: 'Log Meal', href: '/log', icon: BookOpen },
   { name: 'Profile', href: '/profile', icon: User },
 ];

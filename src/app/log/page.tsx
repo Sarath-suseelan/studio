@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -35,7 +34,6 @@ export default function LogPage() {
     const mealLogRef = doc(firestore, 'users', user.uid, 'meal_logs', logId);
     
     // We denormalize the macros directly into the MealLog for the dashboard summary
-    // This follows standard Firestore performance practices for MVPs
     setDocumentNonBlocking(mealLogRef, {
       id: logId,
       userId: user.uid,
@@ -133,18 +131,6 @@ export default function LogPage() {
                   </div>
                 )}
               </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-r from-primary/10 to-transparent border-primary/20">
-            <CardContent className="p-6 flex items-center justify-between">
-              <div>
-                <h3 className="font-bold text-lg text-primary">Can't find it?</h3>
-                <p className="text-sm text-muted-foreground">Snap a photo and let our AI analyze it for you.</p>
-              </div>
-              <Button asChild className="shadow-lg shadow-primary/20">
-                <a href="/analyze">Try AI Analysis</a>
-              </Button>
             </CardContent>
           </Card>
         </div>

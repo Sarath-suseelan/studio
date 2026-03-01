@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -99,10 +98,7 @@ export default function DashboardPage() {
           </div>
           <div className="flex gap-2">
             <Button size="sm" className="rounded-full shadow-lg shadow-primary/20" asChild>
-              <Link href="/analyze"><Plus className="w-4 h-4 mr-2" /> AI Analyze</Link>
-            </Button>
-            <Button size="sm" variant="outline" className="rounded-full" asChild>
-              <Link href="/log">Manual Log</Link>
+              <Link href="/log"><Plus className="w-4 h-4 mr-2" /> Log Meal</Link>
             </Button>
           </div>
         </div>
