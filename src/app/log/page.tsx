@@ -56,10 +56,10 @@ export default function LogPage() {
     ...FOOD_DATABASE,
     ...(customFoods?.map(cf => ({
       name: cf.name,
-      calories: Number(cf.caloriesPerServing || cf.calories),
-      protein: Number(cf.proteinPerServingGrams || cf.protein),
-      carbs: Number(cf.carbsPerServingGrams || cf.carbs),
-      fat: Number(cf.fatPerServingGrams || cf.fat),
+      calories: Number(cf.caloriesPerServing || cf.calories || 0),
+      protein: Number(cf.proteinPerServingGrams || cf.protein || 0),
+      carbs: Number(cf.carbsPerServingGrams || cf.carbs || 0),
+      fat: Number(cf.fatPerServingGrams || cf.fat || 0),
       isCustom: true
     })) || [])
   ];
@@ -107,13 +107,19 @@ export default function LogPage() {
       const foodId = doc(collection(firestore, 'placeholder')).id;
       const foodRef = doc(firestore, 'users', user.uid, 'custom_food_items', foodId);
 
+      // Data normalization
+      const caloriesVal = parseFloat(customFood.calories) || 0;
+      const proteinVal = parseFloat(customFood.protein) || 0;
+      const carbsVal = parseFloat(customFood.carbs) || 0;
+      const fatVal = parseFloat(customFood.fat) || 0;
+
       setDocumentNonBlocking(foodRef, {
         id: foodId,
-        name: customFood.name,
-        caloriesPerServing: Number(customFood.calories),
-        proteinPerServingGrams: Number(customFood.protein),
-        carbsPerServingGrams: Number(customFood.carbs),
-        fatPerServingGrams: Number(customFood.fat),
+        name: customFood.name.trim(),
+        caloriesPerServing: caloriesVal,
+        proteinPerServingGrams: proteinVal,
+        carbsPerServingGrams: carbsVal,
+        fatPerServingGrams: fatVal,
         servingSizeUnit: 'serving',
         servingSizeValue: 1,
         isSystemFood: false,
@@ -130,14 +136,15 @@ export default function LogPage() {
       setCustomFood({ name: '', calories: '', protein: '', carbs: '', fat: '' });
       setIsDialogOpen(false);
     } catch (err) {
-      console.error('Error creating custom food:', err);
+      console.error('Error in custom food submission:', err);
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'Failed to create food item. Please try again.',
+        description: 'An unexpected error occurred. Please try again.',
       });
     } finally {
-      setIsSubmitting(false);
+      // Small timeout to ensure smooth UI transition
+      setTimeout(() => setIsSubmitting(false), 300);
     }
   };
 
@@ -171,7 +178,9 @@ export default function LogPage() {
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <Dialog open={isDialogOpen} onOpenChange={(open) => {
+              if (!isSubmitting) setIsDialogOpen(open);
+            }}>
               <DialogTrigger asChild>
                 <Button variant="outline" size="icon" className="h-12 w-12 rounded-xl border-dashed">
                   <PlusCircle className="w-6 h-6 text-primary" />
@@ -195,6 +204,7 @@ export default function LogPage() {
                         onChange={(e) => setCustomFood({ ...customFood, name: e.target.value })}
                         required
                         disabled={isSubmitting}
+                        autoFocus
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
@@ -203,6 +213,7 @@ export default function LogPage() {
                         <Input
                           id="calories"
                           type="number"
+                          step="any"
                           placeholder="0"
                           value={customFood.calories}
                           onChange={(e) => setCustomFood({ ...customFood, calories: e.target.value })}
@@ -215,6 +226,7 @@ export default function LogPage() {
                         <Input
                           id="protein"
                           type="number"
+                          step="any"
                           placeholder="0"
                           value={customFood.protein}
                           onChange={(e) => setCustomFood({ ...customFood, protein: e.target.value })}
@@ -229,6 +241,7 @@ export default function LogPage() {
                         <Input
                           id="carbs"
                           type="number"
+                          step="any"
                           placeholder="0"
                           value={customFood.carbs}
                           onChange={(e) => setCustomFood({ ...customFood, carbs: e.target.value })}
@@ -241,6 +254,7 @@ export default function LogPage() {
                         <Input
                           id="fat"
                           type="number"
+                          step="any"
                           placeholder="0"
                           value={customFood.fat}
                           onChange={(e) => setCustomFood({ ...customFood, fat: e.target.value })}
@@ -251,10 +265,10 @@ export default function LogPage() {
                     </div>
                   </div>
                   <DialogFooter>
-                    <Button type="submit" className="w-full" disabled={isSubmitting}>
+                    <Button type="submit" className="w-full h-12 text-lg font-bold" disabled={isSubmitting}>
                       {isSubmitting ? (
                         <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving...
+                          <Loader2 className="w-5 h-5 mr-2 animate-spin" /> Saving...
                         </>
                       ) : (
                         'Save Food Item'
