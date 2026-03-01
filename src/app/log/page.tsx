@@ -29,7 +29,8 @@ export default function LogPage() {
   const [mealType, setMealType] = useState('Breakfast');
   const [isLogging, setIsLogging] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const { user } = useUser();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user, isUserLoading } = useUser();
   const { firestore } = useFirestore();
   const { toast } = useToast();
 
@@ -98,35 +99,57 @@ export default function LogPage() {
 
   const handleCreateCustomFood = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !firestore) return;
+    if (!user || !firestore || isSubmitting) return;
 
-    const foodId = doc(collection(firestore, 'placeholder')).id;
-    const foodRef = doc(firestore, 'users', user.uid, 'custom_food_items', foodId);
+    setIsSubmitting(true);
+    
+    try {
+      const foodId = doc(collection(firestore, 'placeholder')).id;
+      const foodRef = doc(firestore, 'users', user.uid, 'custom_food_items', foodId);
 
-    setDocumentNonBlocking(foodRef, {
-      id: foodId,
-      name: customFood.name,
-      caloriesPerServing: Number(customFood.calories),
-      proteinPerServingGrams: Number(customFood.protein),
-      carbsPerServingGrams: Number(customFood.carbs),
-      fatPerServingGrams: Number(customFood.fat),
-      servingSizeUnit: 'serving',
-      servingSizeValue: 1,
-      isSystemFood: false,
-      createdByUserId: user.uid,
-      createdAt: serverTimestamp(),
-    }, { merge: true });
+      setDocumentNonBlocking(foodRef, {
+        id: foodId,
+        name: customFood.name,
+        caloriesPerServing: Number(customFood.calories),
+        proteinPerServingGrams: Number(customFood.protein),
+        carbsPerServingGrams: Number(customFood.carbs),
+        fatPerServingGrams: Number(customFood.fat),
+        servingSizeUnit: 'serving',
+        servingSizeValue: 1,
+        isSystemFood: false,
+        createdByUserId: user.uid,
+        createdAt: serverTimestamp(),
+      }, { merge: true });
 
-    toast({
-      title: "Food Created",
-      description: `${customFood.name} has been added to your custom library.`,
-    });
+      toast({
+        title: "Food Created",
+        description: `${customFood.name} has been added to your custom library.`,
+      });
 
-    setIsDialogOpen(false);
-    setCustomFood({ name: '', calories: '', protein: '', carbs: '', fat: '' });
+      // Clear form and close dialog
+      setCustomFood({ name: '', calories: '', protein: '', carbs: '', fat: '' });
+      setIsDialogOpen(false);
+    } catch (err) {
+      console.error('Error creating custom food:', err);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to create food item. Please try again.',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const mealTypes = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
+
+  if (isUserLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-10 h-10 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -171,6 +194,7 @@ export default function LogPage() {
                         value={customFood.name}
                         onChange={(e) => setCustomFood({ ...customFood, name: e.target.value })}
                         required
+                        disabled={isSubmitting}
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
@@ -183,6 +207,7 @@ export default function LogPage() {
                           value={customFood.calories}
                           onChange={(e) => setCustomFood({ ...customFood, calories: e.target.value })}
                           required
+                          disabled={isSubmitting}
                         />
                       </div>
                       <div className="grid gap-2">
@@ -194,6 +219,7 @@ export default function LogPage() {
                           value={customFood.protein}
                           onChange={(e) => setCustomFood({ ...customFood, protein: e.target.value })}
                           required
+                          disabled={isSubmitting}
                         />
                       </div>
                     </div>
@@ -207,6 +233,7 @@ export default function LogPage() {
                           value={customFood.carbs}
                           onChange={(e) => setCustomFood({ ...customFood, carbs: e.target.value })}
                           required
+                          disabled={isSubmitting}
                         />
                       </div>
                       <div className="grid gap-2">
@@ -218,12 +245,21 @@ export default function LogPage() {
                           value={customFood.fat}
                           onChange={(e) => setCustomFood({ ...customFood, fat: e.target.value })}
                           required
+                          disabled={isSubmitting}
                         />
                       </div>
                     </div>
                   </div>
                   <DialogFooter>
-                    <Button type="submit" className="w-full">Save Food Item</Button>
+                    <Button type="submit" className="w-full" disabled={isSubmitting}>
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving...
+                        </>
+                      ) : (
+                        'Save Food Item'
+                      )}
+                    </Button>
                   </DialogFooter>
                 </form>
               </DialogContent>
