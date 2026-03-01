@@ -7,24 +7,57 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FOOD_DATABASE } from '@/lib/mock-data';
-import { Search, Plus, Utensils, History, Info } from 'lucide-react';
+import { Search, Plus, Utensils, History, Info, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { useUser, useFirestore } from '@/firebase';
+import { collection, doc, serverTimestamp } from 'firebase/firestore';
+import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 export default function LogPage() {
   const [search, setSearch] = useState('');
+  const [mealType, setMealType] = useState('Breakfast');
+  const [isLogging, setIsLogging] = useState<string | null>(null);
+  const { user } = useUser();
+  const { firestore } = useFirestore ? { firestore: useFirestore() } : { firestore: null };
   const { toast } = useToast();
 
   const filteredFoods = FOOD_DATABASE.filter(food => 
     food.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleLog = (foodName: string) => {
+  const handleLog = async (food: typeof FOOD_DATABASE[0]) => {
+    if (!user || !firestore) return;
+
+    const logId = doc(collection(firestore, 'placeholder')).id;
+    setIsLogging(food.name);
+
+    const mealLogRef = doc(firestore, 'users', user.uid, 'meal_logs', logId);
+    
+    // We denormalize the macros directly into the MealLog for the dashboard summary
+    // This follows standard Firestore performance practices for MVPs
+    setDocumentNonBlocking(mealLogRef, {
+      id: logId,
+      userId: user.uid,
+      logDateTime: new Date().toISOString(),
+      mealType: mealType,
+      name: food.name, // Denormalized for display
+      calories: food.calories,
+      protein: food.protein,
+      carbs: food.carbs,
+      fat: food.fat,
+      createdAt: serverTimestamp(),
+    }, { merge: true });
+
     toast({
       title: "Success",
-      description: `${foodName} has been added to your log.`,
+      description: `${food.name} has been added to your log.`,
     });
+    
+    setIsLogging(null);
   };
+
+  const mealTypes = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
 
   return (
     <div className="min-h-screen bg-background">
@@ -47,10 +80,16 @@ export default function LogPage() {
           </div>
 
           <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-            <Badge variant="secondary" className="px-4 py-1.5 cursor-pointer">Breakfast</Badge>
-            <Badge variant="outline" className="px-4 py-1.5 cursor-pointer">Lunch</Badge>
-            <Badge variant="outline" className="px-4 py-1.5 cursor-pointer">Dinner</Badge>
-            <Badge variant="outline" className="px-4 py-1.5 cursor-pointer">Snack</Badge>
+            {mealTypes.map((type) => (
+              <Badge 
+                key={type}
+                variant={mealType === type ? "secondary" : "outline"} 
+                className="px-4 py-1.5 cursor-pointer whitespace-nowrap"
+                onClick={() => setMealType(type)}
+              >
+                {type}
+              </Badge>
+            ))}
           </div>
 
           <Card>
@@ -75,8 +114,14 @@ export default function LogPage() {
                           </p>
                         </div>
                       </div>
-                      <Button size="icon" variant="ghost" className="rounded-full hover:bg-primary hover:text-white" onClick={() => handleLog(food.name)}>
-                        <Plus className="w-5 h-5" />
+                      <Button 
+                        size="icon" 
+                        variant="ghost" 
+                        className="rounded-full hover:bg-primary hover:text-white" 
+                        onClick={() => handleLog(food)}
+                        disabled={!!isLogging}
+                      >
+                        {isLogging === food.name ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-5 h-5" />}
                       </Button>
                     </div>
                   ))
