@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useRef } from 'react';
@@ -9,7 +8,10 @@ import { Camera, Upload, Loader2, CheckCircle2, AlertCircle, RefreshCw } from 'l
 import Image from 'next/image';
 import { aiMacroAnalysis, AIMacroAnalysisOutput } from '@/ai/flows/ai-macro-analysis';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { Progress } from '@/components/ui/progress';
+import { useUser, useFirestore } from '@/firebase';
+import { collection, doc, serverTimestamp } from 'firebase/firestore';
+import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { useToast } from '@/hooks/use-toast';
 
 export default function AnalyzePage() {
   const [image, setImage] = useState<string | null>(null);
@@ -17,6 +19,10 @@ export default function AnalyzePage() {
   const [result, setResult] = useState<AIMacroAnalysisOutput | null>(null);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const { user } = useUser();
+  const { firestore } = useFirestore ? { firestore: useFirestore() } : { firestore: null };
+  const { toast } = useToast();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -38,11 +44,45 @@ export default function AnalyzePage() {
     try {
       const output = await aiMacroAnalysis({ photoDataUri: image });
       setResult(output);
-    } catch (err) {
-      setError('Analysis failed. Please try again with a clearer photo.');
+    } catch (err: any) {
+      console.error('Analysis error:', err);
+      setError('Analysis failed. Please try again with a clearer photo or check your connection.');
     } finally {
       setAnalyzing(false);
     }
+  };
+
+  const handleLogMeal = async () => {
+    if (!user || !firestore || !result) return;
+
+    const totalCalories = result.foodItems.reduce((acc, curr) => acc + curr.estimatedMacros.calories, 0);
+    const totalProtein = result.foodItems.reduce((acc, curr) => acc + curr.estimatedMacros.protein, 0);
+    const totalCarbs = result.foodItems.reduce((acc, curr) => acc + curr.estimatedMacros.carbs, 0);
+    const totalFat = result.foodItems.reduce((acc, curr) => acc + curr.estimatedMacros.fat, 0);
+
+    const logId = doc(collection(firestore, 'placeholder')).id;
+    const mealLogRef = doc(firestore, 'users', user.uid, 'meal_logs', logId);
+    
+    setDocumentNonBlocking(mealLogRef, {
+      id: logId,
+      userId: user.uid,
+      logDateTime: new Date().toISOString(),
+      mealType: 'AI Analysis',
+      name: result.foodItems.map(i => i.name).join(', '),
+      calories: totalCalories,
+      protein: totalProtein,
+      carbs: totalCarbs,
+      fat: totalFat,
+      createdAt: serverTimestamp(),
+      source: 'ai_analysis'
+    }, { merge: true });
+
+    toast({
+      title: "Success",
+      description: "AI-analyzed meal has been added to your log.",
+    });
+
+    window.location.href = '/dashboard';
   };
 
   const triggerFileInput = () => {
@@ -183,7 +223,7 @@ export default function AnalyzePage() {
                   </div>
 
                   <div className="flex gap-2">
-                    <Button className="flex-1" onClick={() => window.location.href = '/dashboard'}>
+                    <Button className="flex-1" onClick={handleLogMeal}>
                       Log This Meal
                     </Button>
                     <Button variant="outline" onClick={resetAnalysis}>

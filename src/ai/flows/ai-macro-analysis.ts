@@ -39,8 +39,16 @@ const aiMacroAnalysisPrompt = ai.definePrompt({
   name: 'aiMacroAnalysisPrompt',
   input: {schema: AIMacroAnalysisInputSchema},
   output: {schema: AIMacroAnalysisOutputSchema},
-  model: 'googleai/gemini-2.5-flash-image',
-  prompt: `You are an expert nutritionist and food analyst. Your task is to identify food items in the provided image and estimate their macronutrient content (calories, protein, carbohydrates, and fat). Provide a detailed breakdown for each identified item and an overall summary of the meal.\n\nImage: {{media url=photoDataUri}}\n\nPlease provide the information in the following JSON format:\n{{AIMacroAnalysisOutputSchema}}\n`,
+  model: 'googleai/gemini-1.5-flash',
+  prompt: `You are an expert nutritionist and food analyst. 
+  
+  Your task is to:
+  1. Identify food items in the provided image.
+  2. Estimate their macronutrient content (calories, protein, carbohydrates, and fat) based on standard portion sizes visible in the image.
+  3. Provide a detailed breakdown for each identified item.
+  4. Write a brief overall summary of the meal's nutritional profile.
+
+  Image to analyze: {{media url=photoDataUri}}`,
 });
 
 const aiMacroAnalysisFlow = ai.defineFlow(
@@ -50,11 +58,16 @@ const aiMacroAnalysisFlow = ai.defineFlow(
     outputSchema: AIMacroAnalysisOutputSchema,
   },
   async (input) => {
-    const {output} = await aiMacroAnalysisPrompt(input);
-    if (!output) {
-      throw new Error('Failed to get macro analysis output from the model.');
+    try {
+      const {output} = await aiMacroAnalysisPrompt(input);
+      if (!output) {
+        throw new Error('Failed to get macro analysis output from the model.');
+      }
+      return output;
+    } catch (error) {
+      console.error('Genkit flow error:', error);
+      throw error;
     }
-    return output;
   }
 );
 
