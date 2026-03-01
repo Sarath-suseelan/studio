@@ -37,7 +37,7 @@ export type AIMacroAnalysisOutput = z.infer<typeof AIMacroAnalysisOutputSchema>;
 
 const aiMacroAnalysisPrompt = ai.definePrompt({
   name: 'aiMacroAnalysisPrompt',
-  model: 'googleai/gemini-1.5-flash',
+  model: 'gemini-1.5-flash',
   input: {schema: AIMacroAnalysisInputSchema},
   output: {schema: AIMacroAnalysisOutputSchema},
   prompt: `You are an expert nutritionist and food analyst. 
@@ -58,16 +58,11 @@ const aiMacroAnalysisFlow = ai.defineFlow(
     outputSchema: AIMacroAnalysisOutputSchema,
   },
   async (input) => {
-    try {
-      const {output} = await aiMacroAnalysisPrompt(input);
-      if (!output) {
-        throw new Error('Failed to get macro analysis output from the model.');
-      }
-      return output;
-    } catch (error) {
-      console.error('Genkit flow error:', error);
-      throw error;
+    const {output} = await aiMacroAnalysisPrompt(input);
+    if (!output) {
+      throw new Error('Failed to get macro analysis output from the model.');
     }
+    return output;
   }
 );
 
