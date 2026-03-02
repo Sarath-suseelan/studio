@@ -74,27 +74,36 @@ export default function LogPage() {
     const logId = doc(collection(firestore, 'placeholder')).id;
     setIsLogging(food.name);
 
-    const mealLogRef = doc(firestore, 'users', user.uid, 'meal_logs', logId);
-    
-    setDocumentNonBlocking(mealLogRef, {
-      id: logId,
-      userId: user.uid,
-      logDateTime: new Date().toISOString(),
-      mealType: mealType,
-      name: food.name,
-      calories: food.calories,
-      protein: food.protein,
-      carbs: food.carbs,
-      fat: food.fat,
-      createdAt: serverTimestamp(),
-    }, { merge: true });
+    try {
+      const mealLogRef = doc(firestore, 'users', user.uid, 'meal_logs', logId);
+      
+      await setDocumentNonBlocking(mealLogRef, {
+        id: logId,
+        userId: user.uid,
+        logDateTime: new Date().toISOString(),
+        mealType: mealType,
+        name: food.name,
+        calories: food.calories,
+        protein: food.protein,
+        carbs: food.carbs,
+        fat: food.fat,
+        createdAt: serverTimestamp(),
+      }, { merge: true });
 
-    toast({
-      title: "Success",
-      description: `${food.name} has been added to your log.`,
-    });
-    
-    setIsLogging(null);
+      toast({
+        title: "Success",
+        description: `${food.name} has been added to your log.`,
+      });
+    } catch (error) {
+      console.error('Error logging meal:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to log meal. Please try again.',
+      });
+    } finally {
+      setIsLogging(null);
+    }
   };
 
   const handleCreateCustomFood = async (e: React.FormEvent) => {
@@ -113,7 +122,7 @@ export default function LogPage() {
       const carbsVal = parseFloat(customFood.carbs) || 0;
       const fatVal = parseFloat(customFood.fat) || 0;
 
-      setDocumentNonBlocking(foodRef, {
+      await setDocumentNonBlocking(foodRef, {
         id: foodId,
         name: customFood.name.trim(),
         caloriesPerServing: caloriesVal,
@@ -140,7 +149,7 @@ export default function LogPage() {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'An unexpected error occurred. Please try again.',
+        description: 'Failed to create food item. Please try again.',
       });
     } finally {
       // Small timeout to ensure smooth UI transition

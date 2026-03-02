@@ -86,34 +86,44 @@ export default function AnalyzePage() {
   const handleLogMeal = async () => {
     if (!user || !firestore || !result) return;
 
-    const totalCalories = result.foodItems.reduce((acc, curr) => acc + curr.estimatedMacros.calories, 0);
-    const totalProtein = result.foodItems.reduce((acc, curr) => acc + curr.estimatedMacros.protein, 0);
-    const totalCarbs = result.foodItems.reduce((acc, curr) => acc + curr.estimatedMacros.carbs, 0);
-    const totalFat = result.foodItems.reduce((acc, curr) => acc + curr.estimatedMacros.fat, 0);
+    try {
+      const totalCalories = result.foodItems.reduce((acc, curr) => acc + curr.estimatedMacros.calories, 0);
+      const totalProtein = result.foodItems.reduce((acc, curr) => acc + curr.estimatedMacros.protein, 0);
+      const totalCarbs = result.foodItems.reduce((acc, curr) => acc + curr.estimatedMacros.carbs, 0);
+      const totalFat = result.foodItems.reduce((acc, curr) => acc + curr.estimatedMacros.fat, 0);
 
-    const logId = doc(collection(firestore, 'placeholder')).id;
-    const mealLogRef = doc(firestore, 'users', user.uid, 'meal_logs', logId);
-    
-    setDocumentNonBlocking(mealLogRef, {
-      id: logId,
-      userId: user.uid,
-      logDateTime: new Date().toISOString(),
-      mealType: 'AI Analysis',
-      name: result.foodItems.map(i => i.name).join(', '),
-      calories: totalCalories,
-      protein: totalProtein,
-      carbs: totalCarbs,
-      fat: totalFat,
-      createdAt: serverTimestamp(),
-      source: 'ai_analysis'
-    }, { merge: true });
+      const logId = doc(collection(firestore, 'placeholder')).id;
+      const mealLogRef = doc(firestore, 'users', user.uid, 'meal_logs', logId);
+      
+      await setDocumentNonBlocking(mealLogRef, {
+        id: logId,
+        userId: user.uid,
+        logDateTime: new Date().toISOString(),
+        mealType: 'AI Analysis',
+        name: result.foodItems.map(i => i.name).join(', '),
+        calories: totalCalories,
+        protein: totalProtein,
+        carbs: totalCarbs,
+        fat: totalFat,
+        createdAt: serverTimestamp(),
+        source: 'ai_analysis'
+      }, { merge: true });
 
-    toast({
-      title: "Success",
-      description: "AI-analyzed meal has been added to your log.",
-    });
+      toast({
+        title: "Success",
+        description: "AI-analyzed meal has been added to your log.",
+      });
 
-    window.location.href = '/dashboard';
+      window.location.href = '/dashboard';
+    } catch (error) {
+      console.error('Error logging meal:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to log meal. Please try again.',
+      });
+    }
+  };
   };
 
   const triggerFileInput = () => {

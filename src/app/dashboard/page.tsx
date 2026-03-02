@@ -24,7 +24,7 @@ import {
 export default function DashboardPage() {
   const [mounted, setMounted] = useState(false);
   const { user, isUserLoading } = useUser();
-  const { firestore } = useFirestore ? { firestore: useFirestore() } : { firestore: null };
+  const { firestore } = useFirestore();
   const router = useRouter();
 
   useEffect(() => {

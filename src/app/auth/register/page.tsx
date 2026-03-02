@@ -22,7 +22,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { auth } = { auth: useAuth() };
-  const { firestore } = { firestore: useFirestore() };
+  const { firestore } = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
 

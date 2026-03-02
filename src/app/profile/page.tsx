@@ -15,7 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export default function ProfilePage() {
   const { user, isUserLoading } = useUser();
-  const { firestore } = useFirestore ? { firestore: useFirestore() } : { firestore: null };
+  const { firestore } = useFirestore();
   const { toast } = useToast();
 
   const userDocRef = useMemoFirebase(() => {
