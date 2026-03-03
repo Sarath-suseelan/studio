@@ -124,7 +124,6 @@ export default function AnalyzePage() {
       });
     }
   };
-  };
 
   const triggerFileInput = () => {
     fileInputRef.current?.click();
